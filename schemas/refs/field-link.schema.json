@@ -1,0 +1,10 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-link.schema.json",
+    "title": "ACF Field — Link",
+    "type": "object",
+    "required": ["return_format"],
+    "properties": {
+        "return_format": { "enum": ["array", "url"] }
+    }
+}

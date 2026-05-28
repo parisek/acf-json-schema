@@ -1,0 +1,12 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-wysiwyg.schema.json",
+    "title": "ACF Field — WYSIWYG",
+    "type": "object",
+    "properties": {
+        "tabs": { "enum": ["all", "visual", "text"] },
+        "toolbar": { "enum": ["full", "basic"] },
+        "media_upload": { "enum": [0, 1] },
+        "delay": { "enum": [0, 1] }
+    }
+}

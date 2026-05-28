@@ -1,0 +1,11 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-textarea.schema.json",
+    "title": "ACF Field — Textarea",
+    "type": "object",
+    "properties": {
+        "maxlength": { "type": ["string", "integer", "null"] },
+        "rows": { "type": ["string", "integer", "null"] },
+        "new_lines": { "enum": ["wpautop", "br", ""] }
+    }
+}
