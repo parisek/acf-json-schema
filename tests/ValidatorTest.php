@@ -267,4 +267,148 @@ final class ValidatorTest extends TestCase {
         );
         $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
     }
+
+    public function test_field_group_minimal_passes(): void {
+        $data = (object) [
+            'key' => 'group_test',
+            'title' => 'Test Group',
+            'fields' => [
+                (object) [
+                    'key' => 'field_title',
+                    'label' => 'Title',
+                    'name' => 'title',
+                    'type' => 'text',
+                    'allow_in_bindings' => 0
+                ]
+            ],
+            'location' => [
+                [ (object) ['param' => 'post_type', 'operator' => '==', 'value' => 'page'] ]
+            ],
+            'menu_order' => 0,
+            'active' => true,
+            'modified' => 1716000000,
+            'acfml_field_group_mode' => 'advanced'
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/acf.schema.json',
+            $data
+        );
+        $this->assertTrue($result->isValid(), 'minimal field group must pass. Errors: ' . json_encode($this->validator->formatErrors($result)));
+    }
+
+    public function test_field_group_image_with_url_return_format_fails(): void {
+        $data = (object) [
+            'key' => 'group_test',
+            'title' => 'Test',
+            'fields' => [
+                (object) [
+                    'key' => 'field_img',
+                    'label' => 'Image',
+                    'name' => 'image',
+                    'type' => 'image',
+                    'allow_in_bindings' => 0,
+                    'return_format' => 'url'
+                ]
+            ],
+            'location' => [
+                [ (object) ['param' => 'post_type', 'operator' => '==', 'value' => 'page'] ]
+            ],
+            'modified' => 1716000000,
+            'active' => true,
+            'acfml_field_group_mode' => 'advanced'
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/acf.schema.json',
+            $data
+        );
+        $this->assertFalse($result->isValid(), 'image with return_format:url must fail');
+    }
+
+    public function test_cpt_minimal_passes(): void {
+        $data = (object) [
+            'key' => 'post_type_project',
+            'title' => 'Projects',
+            'post_type' => 'project',
+            'menu_icon' => 'dashicons-portfolio',
+            'active' => true,
+            'public' => true,
+            'menu_position' => 25,
+            'taxonomies' => [],
+            'supports' => ['title', 'editor', 'revisions']
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/cpt.schema.json',
+            $data
+        );
+        $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
+    }
+
+    public function test_cpt_fixture_menu_icon_junk_fails(): void {
+        $path = __DIR__ . '/fixtures/invalid/menu_icon-junk-repr/cpt.json';
+        $data = json_decode(file_get_contents($path));
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/cpt.schema.json',
+            $data
+        );
+        $this->assertFalse(
+            $result->isValid(),
+            'menu_icon junk Python repr must fail cpt.schema.json. Fixture: ' . $path
+        );
+    }
+
+    public function test_taxonomy_minimal_passes(): void {
+        $data = (object) [
+            'key' => 'taxonomy_project_category',
+            'title' => 'Project Categories',
+            'taxonomy' => 'project_category',
+            'object_type' => ['project'],
+            'active' => true,
+            'hierarchical' => true
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/taxonomy.schema.json',
+            $data
+        );
+        $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
+    }
+
+    public function test_block_minimal_passes(): void {
+        $data = (object) [
+            'apiVersion' => 3,
+            'name' => 'acf/hero',
+            'title' => 'Hero',
+            'category' => 'theme',
+            'icon' => 'dashicons-star-filled',
+            'supports' => (object) ['align' => ['full']],
+            'example' => null,
+            'acf' => (object) [
+                'mode' => 'preview',
+                'renderCallback' => 'timber_block_render_callback',
+                'postTypes' => ['page']
+            ]
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/block.schema.json',
+            $data
+        );
+        $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
+    }
+
+    public function test_block_icon_svg_without_currentColor_fails(): void {
+        $data = (object) [
+            'apiVersion' => 3,
+            'name' => 'acf/x',
+            'title' => 'X',
+            'category' => 'theme',
+            'icon' => '<svg fill="#000"><path d=""/></svg>',
+            'supports' => (object) [],
+            'example' => null,
+            'acf' => (object) ['mode' => 'preview', 'renderCallback' => 'r']
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/block.schema.json',
+            $data
+        );
+        $this->assertFalse($result->isValid(), 'block icon SVG must contain currentColor');
+    }
 }
