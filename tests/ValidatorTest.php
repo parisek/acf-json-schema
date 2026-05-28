@@ -102,4 +102,88 @@ final class ValidatorTest extends TestCase {
         );
         $this->assertFalse($result->isValid(), 'Unknown param must fail enum');
     }
+
+    public function test_field_base_text_valid_passes(): void {
+        $field = (object) [
+            'key' => 'field_title',
+            'label' => 'Title',
+            'name' => 'title',
+            'type' => 'text',
+            'allow_in_bindings' => 0
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field.schema.json',
+            $field
+        );
+        $this->assertTrue($result->isValid(), 'minimal text field must pass base');
+    }
+
+    public function test_field_base_missing_allow_in_bindings_fails(): void {
+        $field = (object) [
+            'key' => 'field_title',
+            'label' => 'Title',
+            'name' => 'title',
+            'type' => 'text'
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field.schema.json',
+            $field
+        );
+        $this->assertFalse($result->isValid(), 'missing allow_in_bindings must fail');
+    }
+
+    public function test_field_base_unknown_type_fails(): void {
+        $field = (object) [
+            'key' => 'field_x',
+            'label' => 'X',
+            'name' => 'x',
+            'type' => 'NOT_A_REAL_TYPE',
+            'allow_in_bindings' => 0
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field.schema.json',
+            $field
+        );
+        $this->assertFalse($result->isValid(), 'unknown field type must fail enum');
+    }
+
+    public function test_image_field_return_format_url_fails(): void {
+        $field = (object) [
+            'return_format' => 'url'
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-image.schema.json',
+            $field
+        );
+        $this->assertFalse($result->isValid(), 'image must reject return_format=url');
+    }
+
+    public function test_image_field_return_format_array_passes(): void {
+        $field = (object) [
+            'return_format' => 'array',
+            'preview_size' => 'medium',
+            'wpml_cf_preferences' => 1
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-image.schema.json',
+            $field
+        );
+        $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
+    }
+
+    public function test_link_field_return_format_array_passes(): void {
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-link.schema.json',
+            (object) ['return_format' => 'array']
+        );
+        $this->assertTrue($result->isValid());
+    }
+
+    public function test_link_field_return_format_url_passes(): void {
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-link.schema.json',
+            (object) ['return_format' => 'url']
+        );
+        $this->assertTrue($result->isValid());
+    }
 }
