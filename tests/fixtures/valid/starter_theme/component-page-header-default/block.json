@@ -1,0 +1,40 @@
+{
+    "apiVersion": 3,
+    "name": "acf\/page-header-default",
+    "title": "Hlavička stránky",
+    "description": null,
+    "category": "theme",
+    "icon": "<svg xmlns=\"http:\/\/www.w3.org\/2000\/svg\" viewBox=\"0 0 24 24\"><rect width=\"24\" height=\"24\" fill=\"currentColor\"\/><svg x=\"4\" y=\"3\" width=\"16\" height=\"18\" viewBox=\"0 0 8 10\"><path fill=\"#ff4942\" d=\"M4.773,3.828c0,0.708-0.431,1.063-1.294,1.063H2.406V2.731h1.062c0.871,0,1.306,0.358,1.306,1.073V3.828z M6.116,1.589C5.509,1.082,4.684,0.83,3.643,0.83h-3.5v8.166h2.263V6.663h1.12c1.051,0,1.89-0.249,2.52-0.748c0.661-0.527,0.993-1.259,0.993-2.191V3.7C7.038,2.806,6.73,2.103,6.116,1.589\"\/><\/svg><\/svg>",
+    "keywords": null,
+    "supports": {
+        "align": [
+            "full"
+        ],
+        "mode": false,
+        "spacing": false,
+        "anchor": true,
+        "className": true
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    },
+"example": {
+        "viewportWidth": 1280,
+        "attributes": {
+            "align": "full",
+            "mode": "preview",
+            "data": {
+                "title": "V\u00fdjime\u010dn\u00fd design u v\u00e1s doma",
+                "perex": "<p>Studio <strong>Porta<\/strong> navrhuje weby a&nbsp;tiskoviny s&nbsp;tahem na branku. \u017d\u00e1dn\u00e9 estetick\u00e9 experimenty bez kontextu \u2014 ka\u017ed\u00fd layout mus\u00ed m\u00edt d\u016fvod.<\/p>"
+            }
+        }
+    },
+        "acf": {
+        "mode": "preview",
+        "renderCallback": "Parisek\\TimberKit\\BlockRenderer::render",
+        "postTypes": ["page"]
+    }
+}

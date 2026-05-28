@@ -1,0 +1,48 @@
+{
+    "key": "group_article-list",
+    "title": "Article-list",
+    "fields": [
+        {
+            "key": "field_article-list_title",
+            "label": "Nadpis",
+            "name": "title",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "placeholder": "Blogujeme",
+            "maxlength": 80,
+            "wpml_cf_preferences": 2,
+            "default_value": "",
+            "prepend": "",
+            "append": "",
+            "allow_in_bindings": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/article-list"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1756303996,
+    "acfml_field_group_mode": "advanced"
+}

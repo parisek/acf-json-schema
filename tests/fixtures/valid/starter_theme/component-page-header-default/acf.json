@@ -1,0 +1,71 @@
+{
+    "key": "group_page-header-default",
+    "title": "Hlavička stránky",
+    "fields": [
+        {
+            "key": "field_page-header-default_title",
+            "label": "Nadpis",
+            "name": "title",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 1,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "placeholder": "Zadejte název",
+            "maxlength": 80,
+            "wpml_cf_preferences": 2,
+            "default_value": "",
+            "prepend": "",
+            "append": "",
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_page-header-default_perex",
+            "label": "Popisek",
+            "name": "perex",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "new_lines": "wpautop",
+            "tabs": "all",
+            "toolbar": "basic",
+            "media_upload": 0,
+            "wpml_cf_preferences": 2,
+            "default_value": "",
+            "delay": 0,
+            "allow_in_bindings": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/page-header-default"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1756303996,
+    "acfml_field_group_mode": "advanced"
+}

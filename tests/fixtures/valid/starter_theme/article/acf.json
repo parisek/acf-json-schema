@@ -1,0 +1,67 @@
+{
+    "key": "group_article",
+    "title": "Článek",
+    "fields": [
+        {
+            "key": "field_article_image",
+            "label": "Náhledový obrázek",
+            "name": "image",
+            "type": "image",
+            "instructions": "Hlavní obrázek článku pro výpisy a sdílení",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array",
+            "library": "all",
+            "preview_size": "medium",
+            "wpml_cf_preferences": 1,
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_article_perex",
+            "label": "Perex",
+            "name": "perex",
+            "type": "wysiwyg",
+            "instructions": "Krátký úvodní text zobrazený ve výpisech",
+            "required": 1,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "tabs": "visual",
+            "toolbar": "basic",
+            "media_upload": 0,
+            "delay": 0,
+            "wpml_cf_preferences": 2,
+            "allow_in_bindings": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "post"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "side",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "show_in_graphql": true,
+    "graphql_field_name": "acfPost",
+    "acfml_field_group_mode": "advanced",
+    "modified": 1779005254
+}

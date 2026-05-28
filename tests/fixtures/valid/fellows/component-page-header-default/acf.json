@@ -1,0 +1,96 @@
+{
+    "key": "group_page_header_default",
+    "title": "Header Default Fields",
+    "fields": [
+        {
+            "key": "field_page_header_default_title",
+            "label": "Nadpis",
+            "name": "title",
+            "type": "text",
+            "instructions": "",
+            "required": 1,
+            "conditional_logic": 0,
+            "allow_in_bindings": 0,
+            "wpml_cf_preferences": 2,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": "",
+            "maxlength": ""
+        },
+        {
+            "key": "field_page_header_default_advanced",
+            "label": "Advanced",
+            "name": "advanced",
+            "aria-label": "",
+            "type": "accordion",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "allow_in_bindings": 0,
+            "open": 0,
+            "multi_expand": 0,
+            "endpoint": 0
+        },
+        {
+            "key": "field_page_header_default_background",
+            "label": "Background",
+            "name": "background",
+            "aria-label": "",
+            "type": "select",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33.33",
+                "class": "",
+                "id": ""
+            },
+            "allow_in_bindings": 0,
+            "choices": {
+                "light": "Light (50)",
+                "medium": "Medium (100)",
+                "dark": "Dark (300)",
+                "primary": "Green"
+            },
+            "default_value": "light",
+            "allow_null": 0,
+            "multiple": 0,
+            "ui": 1,
+            "return_format": "value",
+            "ajax": 0,
+            "placeholder": "",
+            "create_options": 0,
+            "save_options": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/page-header-default"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "modified": 1764842375,
+    "acfml_field_group_mode": "advanced"
+}
