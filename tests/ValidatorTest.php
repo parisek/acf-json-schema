@@ -345,7 +345,9 @@ final class ValidatorTest extends TestCase {
 
     public function test_cpt_fixture_menu_icon_junk_fails(): void {
         $path = __DIR__ . '/fixtures/invalid/menu_icon-junk-repr/cpt.json';
-        $data = json_decode(file_get_contents($path));
+        $contents = file_get_contents($path);
+        $this->assertIsString($contents, 'Fixture file must be readable: ' . $path);
+        $data = json_decode($contents);
         $result = $this->validator->validate(
             'https://schemas.parisek.dev/acf/cpt.schema.json',
             $data
