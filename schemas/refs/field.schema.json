@@ -32,9 +32,17 @@
         "required": { "enum": [0, 1] },
         "conditional_logic": {
             "oneOf": [
-                { "enum": [0, 1] },
+                { "enum": [false, 0, 1] },
                 { "type": "array" }
             ]
+        },
+        "aria-label": {
+            "type": "string",
+            "description": "ACF Pro admin-UI accessible label for the field row."
+        },
+        "parent_repeater": {
+            "type": "string",
+            "description": "Key of the parent repeater field. Set by ACF on sub_fields when nested inside a repeater."
         },
         "wrapper": {
             "type": "object",
