@@ -17,6 +17,8 @@
         "ui": { "enum": [0, 1] },
         "ajax": { "enum": [0, 1] },
         "return_format": { "enum": ["value", "label", "array"] },
-        "placeholder": { "type": "string" }
+        "placeholder": { "type": "string" },
+        "create_options": { "enum": [0, 1], "description": "Allow editors to create new option values." },
+        "save_options": { "enum": [0, 1], "description": "Save newly created options to choices." }
     }
 }

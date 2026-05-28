@@ -12,6 +12,8 @@
         "max": { "type": ["integer", "string"] },
         "layout": { "enum": ["table", "block", "row"] },
         "button_label": { "type": "string" },
-        "collapsed": { "type": "string" }
+        "collapsed": { "type": "string" },
+        "rows_per_page": { "type": "integer", "description": "Number of rows shown per page in paginated repeater." },
+        "pagination": { "enum": [0, 1], "description": "Enable pagination within the repeater." }
     }
 }

@@ -7,6 +7,7 @@
         "tabs": { "enum": ["all", "visual", "text"] },
         "toolbar": { "enum": ["full", "basic"] },
         "media_upload": { "enum": [0, 1] },
-        "delay": { "enum": [0, 1] }
+        "delay": { "enum": [0, 1] },
+        "new_lines": { "enum": ["wpautop", "br", ""], "description": "How to handle newlines in WYSIWYG output." }
     }
 }
