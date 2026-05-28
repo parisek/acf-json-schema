@@ -1,0 +1,53 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Parisek\AcfJsonSchema\Generator;
+
+$opts = getopt('', ['wp-root:', 'output:', 'help', 'pretty', 'no-pretty']);
+
+if (isset($opts['help'])) {
+    echo <<<USAGE
+acf-schema-gen — Generate JSON Schemas from a live WordPress + ACF Pro install.
+
+Usage:
+  acf-schema-gen --wp-root <path> --output <path> [--pretty | --no-pretty]
+
+Options:
+  --wp-root <path>   Absolute path to WordPress install (wp-load.php must exist there)
+  --output <path>    Directory to write *.schema.json files (created if missing)
+  --pretty           JSON pretty-print (default)
+  --no-pretty        Compact JSON
+
+Exit codes:
+  0  success
+  1  argument validation failure
+  2  WP / ACF bootstrap failure
+
+USAGE;
+    exit(0);
+}
+
+if (!isset($opts['wp-root']) || !isset($opts['output'])) {
+    fwrite(STDERR, "Error: --wp-root and --output are required. Run with --help.\n");
+    exit(1);
+}
+
+$wpRoot = rtrim($opts['wp-root'], '/');
+$output = rtrim($opts['output'], '/');
+$pretty = !isset($opts['no-pretty']);
+
+if (!file_exists("{$wpRoot}/wp-load.php")) {
+    fwrite(STDERR, "Error: wp-load.php not found at {$wpRoot}\n");
+    exit(2);
+}
+
+if (!is_dir($output)) {
+    mkdir($output, 0755, true);
+    mkdir("{$output}/refs", 0755, true);
+}
+
+$generator = new Generator($wpRoot, $output, $pretty);
+$generator->run();
