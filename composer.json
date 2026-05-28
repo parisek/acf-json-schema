@@ -1,6 +1,6 @@
 {
     "name": "parisek/acf-json-schema",
-    "description": "JSON Schema bundle for Advanced Custom Fields JSON exports (field groups, CPT, taxonomy, blocks). Runtime-generated from a live ACF Pro install.",
+    "description": "JSON Schema bundle for Advanced Custom Fields JSON exports (field groups, CPT, taxonomy, blocks). Targets ACF Pro 6.8.x.",
     "type": "library",
     "license": "GPL-3.0-or-later",
     "keywords": ["acf", "advanced custom fields", "wordpress", "json-schema", "lint"],
