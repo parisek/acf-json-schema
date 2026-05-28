@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Parisek\AcfJsonSchema;
 
+use Parisek\AcfJsonSchema\Emit;
 use Parisek\AcfJsonSchema\Extract;
 
 final class Generator {
@@ -20,11 +21,18 @@ final class Generator {
         $this->writeJson("{$this->output}/block.schema.json", (new Extract\BlockExtractor())->emit());
         $this->writeJson("{$this->output}/cpt.schema.json", (new Extract\CptExtractor())->emit());
         $this->writeJson("{$this->output}/taxonomy.schema.json", (new Extract\TaxonomyExtractor())->emit());
+        $emitter = new Emit\SchemaEmitter();
+        $emitter->copyStaticRefs($this->output);
+
         $fields = (new Extract\FieldExtractor())->emitAll();
         foreach ($fields as $type => $schema) {
             $this->writeJson("{$this->output}/refs/field-{$type}.schema.json", $schema);
         }
-        echo "Wrote " . (3 + count($fields)) . " schemas to {$this->output}/\n";
+
+        $this->writeJson("{$this->output}/acf.schema.json", $emitter->emitAcfSchema(array_keys($fields)));
+
+        echo "Wrote " . (4 + count($fields) + 4) . " schemas to {$this->output}/\n";
+        // 4 root (block, cpt, taxonomy, acf) + N field refs (typically 35) + 4 static utility refs
     }
 
     private function bootstrapWordPress(): void {

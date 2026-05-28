@@ -1,0 +1,62 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field.schema.json",
+    "title": "ACF Field (base — common properties)",
+    "description": "Base schema for an ACF field. Per-type refs (refs/field-<type>.schema.json) declare type-specific extras and compose with this base via allOf at the call site (e.g., in acf.schema.json fields[] items).",
+    "type": "object",
+    "required": ["key", "label", "name", "type", "allow_in_bindings"],
+    "properties": {
+        "key": {
+            "type": "string",
+            "pattern": "^field_",
+            "description": "ACF field key — must start with 'field_'. The Admin Sync UI uses this to route saves."
+        },
+        "label": { "type": "string", "minLength": 1 },
+        "name": {
+            "type": ["string", "null"],
+            "description": "snake_case identifier. Null permitted for visual-only fields (accordion, tab, message)."
+        },
+        "type": {
+            "enum": [
+                "text", "textarea", "wysiwyg", "number", "range", "email", "url", "password",
+                "image", "gallery", "file", "link",
+                "post_object", "page_link", "relationship", "taxonomy", "user",
+                "select", "checkbox", "radio", "true_false", "button_group",
+                "color_picker", "date_picker", "time_picker", "date_time_picker", "google_map",
+                "repeater", "group", "flexible_content", "clone",
+                "tab", "accordion", "message", "oembed"
+            ]
+        },
+        "allow_in_bindings": { "enum": [0, 1] },
+        "instructions": { "type": "string" },
+        "required": { "enum": [0, 1] },
+        "conditional_logic": {
+            "oneOf": [
+                { "enum": [false, 0, 1] },
+                { "type": "array" }
+            ]
+        },
+        "aria-label": {
+            "type": "string",
+            "description": "ACF Pro admin-UI accessible label for the field row."
+        },
+        "parent_repeater": {
+            "type": "string",
+            "description": "Key of the parent repeater field. Set by ACF on sub_fields when nested inside a repeater."
+        },
+        "wrapper": {
+            "type": "object",
+            "properties": {
+                "width": { "type": ["string", "integer"] },
+                "class": { "type": "string" },
+                "id": { "type": "string" }
+            },
+            "additionalProperties": false
+        },
+        "default_value": {},
+        "placeholder": { "type": ["string", "null"] },
+        "prepend": { "type": "string" },
+        "append": { "type": "string" },
+        "wpml_cf_preferences": { "enum": [0, 1, 2, 3] }
+    }
+}
