@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace Parisek\AcfJsonSchema\Tests\Helpers;
 
+use Opis\JsonSchema\ValidationResult;
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Resolvers\SchemaResolver;
 use Opis\JsonSchema\Validator as OpisValidator;
-use Opis\JsonSchema\ValidationResult;
 
 final class Validator {
 
@@ -21,6 +21,7 @@ final class Validator {
         );
 
         $this->opis = new OpisValidator();
+        $this->opis->setMaxErrors(PHP_INT_MAX);
         $this->opis->setResolver($resolver);
     }
 
@@ -28,7 +29,7 @@ final class Validator {
         return $this->opis->validate($data, $schemaId);
     }
 
-    /** @return array<string, string> */
+    /** @return array<string, mixed> */
     public function formatErrors(ValidationResult $result): array {
         $error = $result->error();
         if ($error === null) {
