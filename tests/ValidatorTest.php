@@ -37,4 +37,22 @@ final class ValidatorTest extends TestCase {
             'Valid dashicon class must pass. Errors: ' . json_encode($this->validator->formatErrors($result))
         );
     }
+
+    public function test_location_rule_valid_post_type_eq_passes(): void {
+        $rule = ['param' => 'post_type', 'operator' => '==', 'value' => 'page'];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/location-rule.schema.json',
+            (object) $rule
+        );
+        $this->assertTrue($result->isValid(), 'post_type == page must pass');
+    }
+
+    public function test_location_rule_unknown_operator_fails(): void {
+        $rule = ['param' => 'post_type', 'operator' => 'BAD_OPERATOR', 'value' => 'page'];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/location-rule.schema.json',
+            (object) $rule
+        );
+        $this->assertFalse($result->isValid(), 'Unknown operator must fail');
+    }
 }

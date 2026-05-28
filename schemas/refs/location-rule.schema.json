@@ -1,0 +1,25 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/location-rule.schema.json",
+    "title": "ACF Field Group Location Rule",
+    "type": "object",
+    "required": ["param", "operator", "value"],
+    "properties": {
+        "param": {
+            "enum": [
+                "post_type", "post_template", "post_status", "post_format", "post_category",
+                "post_taxonomy", "post", "page_template", "page_type", "page_parent", "page",
+                "current_user", "current_user_role", "user_form", "user_role", "user",
+                "taxonomy", "attachment", "comment", "widget", "nav_menu", "nav_menu_item",
+                "block", "options_page"
+            ]
+        },
+        "operator": {
+            "enum": ["==", "!=", "==pattern", "!=pattern", "==contains", "!=contains"]
+        },
+        "value": {
+            "type": "string"
+        }
+    },
+    "additionalProperties": false
+}
