@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/permalink-rewrite.schema.json",
+    "title": "ACF CPT / Taxonomy permalink rewrite",
+    "type": "object",
+    "properties": {
+        "permalink_rewrite": {
+            "enum": ["no_permalink", "post_type_key", "custom_permalink"]
+        },
+        "slug": { "type": "string" },
+        "with_front": { "enum": ["0", "1"] },
+        "feeds": { "enum": ["0", "1"] },
+        "pages": { "enum": ["0", "1"] }
+    },
+    "additionalProperties": false
+}

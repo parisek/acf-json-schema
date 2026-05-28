@@ -55,4 +55,19 @@ final class ValidatorTest extends TestCase {
         );
         $this->assertFalse($result->isValid(), 'Unknown operator must fail');
     }
+
+    public function test_permalink_rewrite_custom_passes(): void {
+        $rw = (object) [
+            'permalink_rewrite' => 'custom_permalink',
+            'slug' => 'projekt',
+            'with_front' => '0',
+            'feeds' => '0',
+            'pages' => '1'
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/permalink-rewrite.schema.json',
+            $rw
+        );
+        $this->assertTrue($result->isValid(), 'custom permalink config must pass');
+    }
 }
