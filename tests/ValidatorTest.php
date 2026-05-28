@@ -70,4 +70,36 @@ final class ValidatorTest extends TestCase {
         );
         $this->assertTrue($result->isValid(), 'custom permalink config must pass');
     }
+
+    public function test_permalink_rewrite_empty_object_fails(): void {
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/permalink-rewrite.schema.json',
+            (object) []
+        );
+        $this->assertFalse($result->isValid(), 'Empty object must fail (permalink_rewrite required)');
+    }
+
+    public function test_permalink_rewrite_unknown_value_fails(): void {
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/permalink-rewrite.schema.json',
+            (object) ['permalink_rewrite' => 'BOGUS_STRATEGY']
+        );
+        $this->assertFalse($result->isValid(), 'Unknown permalink strategy must fail enum');
+    }
+
+    public function test_permalink_rewrite_extra_property_fails(): void {
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/permalink-rewrite.schema.json',
+            (object) ['permalink_rewrite' => 'custom_permalink', 'slug' => 'x', 'unknown' => 'y']
+        );
+        $this->assertFalse($result->isValid(), 'Extra property must fail additionalProperties:false');
+    }
+
+    public function test_location_rule_unknown_param_fails(): void {
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/location-rule.schema.json',
+            (object) ['param' => 'NOT_A_REAL_PARAM', 'operator' => '==', 'value' => 'x']
+        );
+        $this->assertFalse($result->isValid(), 'Unknown param must fail enum');
+    }
 }

@@ -11,7 +11,7 @@
         },
         {
             "type": "string",
-            "pattern": "^<svg[^>]*>.*</svg>$",
+            "pattern": "^<svg([\\s>][\\s\\S]*)?</svg>$",
             "description": "Inline SVG markup. For block.json icon, must additionally contain 'currentColor' (enforced by block.schema.json extension)."
         },
         {
@@ -26,8 +26,8 @@
         },
         {
             "type": "string",
-            "pattern": "^https?://",
-            "description": "Remote URL — discouraged (latency, CSP). Allowed for legacy compatibility."
+            "pattern": "^https://",
+            "description": "HTTPS URL to an external icon — discouraged (latency, CSP, no theming). Allowed for backward compatibility with legacy projects."
         }
     ]
 }

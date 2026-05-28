@@ -2,15 +2,30 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/permalink-rewrite.schema.json",
     "title": "ACF CPT / Taxonomy permalink rewrite",
+    "description": "Permalink rewrite configuration for ACF CPT and Taxonomy JSON. Numeric flags (with_front, feeds, pages) are STRING-ENCODED (\"0\"/\"1\") because ACF Pro's Admin Sync UI serialises booleans as strings — modelling them as booleans here would break round-trip.",
     "type": "object",
+    "required": ["permalink_rewrite"],
     "properties": {
         "permalink_rewrite": {
+            "description": "Rewrite strategy. no_permalink = use post_type slug as-is, post_type_key = WP default, custom_permalink = use the `slug` field below.",
             "enum": ["no_permalink", "post_type_key", "custom_permalink"]
         },
-        "slug": { "type": "string" },
-        "with_front": { "enum": ["0", "1"] },
-        "feeds": { "enum": ["0", "1"] },
-        "pages": { "enum": ["0", "1"] }
+        "slug": {
+            "description": "The URL prefix when permalink_rewrite is custom_permalink. ACF appends /%postname%/ automatically — do not include it here.",
+            "type": "string"
+        },
+        "with_front": {
+            "description": "String-encoded boolean. ACF Pro serialises as '0' or '1'.",
+            "enum": ["0", "1"]
+        },
+        "feeds": {
+            "description": "String-encoded boolean.",
+            "enum": ["0", "1"]
+        },
+        "pages": {
+            "description": "String-encoded boolean.",
+            "enum": ["0", "1"]
+        }
     },
     "additionalProperties": false
 }

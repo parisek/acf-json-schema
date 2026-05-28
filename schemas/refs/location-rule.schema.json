@@ -2,10 +2,12 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/location-rule.schema.json",
     "title": "ACF Field Group Location Rule",
+    "description": "ACF Field Group location rules tell ACF which posts/pages/users a field group attaches to. Compose multiple rules via the AND-of-OR nested array in acf.schema.json's `location` property. Param enum mirrors ACF Pro's class-acf-location-types.php.",
     "type": "object",
     "required": ["param", "operator", "value"],
     "properties": {
         "param": {
+            "description": "The location axis (post_type, post_template, taxonomy, etc.)",
             "enum": [
                 "post_type", "post_template", "post_status", "post_format", "post_category",
                 "post_taxonomy", "post", "page_template", "page_type", "page_parent", "page",
@@ -15,9 +17,11 @@
             ]
         },
         "operator": {
+            "description": "How to compare the param against the value. Equality, negation, pattern matching, substring.",
             "enum": ["==", "!=", "==pattern", "!=pattern", "==contains", "!=contains"]
         },
         "value": {
+            "description": "The value to compare. String form even for numeric IDs — ACF Pro serialises everything as strings.",
             "type": "string"
         }
     },
