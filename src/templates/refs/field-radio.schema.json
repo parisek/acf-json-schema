@@ -1,0 +1,21 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-radio.schema.json",
+    "title": "ACF Field — Radio",
+    "type": "object",
+    "required": ["return_format"],
+    "properties": {
+        "choices": {
+            "oneOf": [
+                { "type": "array" },
+                { "type": "object" }
+            ]
+        },
+        "default_value": { "type": ["string", "null"] },
+        "allow_null": { "enum": [0, 1] },
+        "other_choice": { "enum": [0, 1] },
+        "save_other_choice": { "enum": [0, 1] },
+        "layout": { "enum": ["vertical", "horizontal"] },
+        "return_format": { "enum": ["value", "label", "array"] }
+    }
+}

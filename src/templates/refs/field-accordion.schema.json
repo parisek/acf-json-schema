@@ -1,0 +1,11 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-accordion.schema.json",
+    "title": "ACF Field — Accordion",
+    "type": "object",
+    "properties": {
+        "open": { "enum": [0, 1], "description": "Open accordion panel by default." },
+        "multi_expand": { "enum": [0, 1], "description": "Allow multiple open panels simultaneously." },
+        "endpoint": { "enum": [0, 1], "description": "Marks the end of an accordion group." }
+    }
+}

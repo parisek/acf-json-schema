@@ -1,0 +1,23 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-gallery.schema.json",
+    "title": "ACF Field — Gallery",
+    "type": "object",
+    "required": ["return_format"],
+    "properties": {
+        "return_format": { "const": "array" },
+        "preview_size": { "type": "string" },
+        "library": { "enum": ["all", "uploadedTo"] },
+        "min": { "type": ["integer", "string"] },
+        "max": { "type": ["integer", "string"] },
+        "min_width":  { "type": ["integer", "string"] },
+        "min_height": { "type": ["integer", "string"] },
+        "min_size":   { "type": ["integer", "string"] },
+        "max_width":  { "type": ["integer", "string"] },
+        "max_height": { "type": ["integer", "string"] },
+        "max_size":   { "type": ["integer", "string"] },
+        "mime_types": { "type": "string" },
+        "insert": { "enum": ["append", "prepend"] },
+        "wpml_cf_preferences": { "const": 1 }
+    }
+}

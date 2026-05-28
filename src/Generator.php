@@ -21,18 +21,27 @@ final class Generator {
         $this->writeJson("{$this->output}/block.schema.json", (new Extract\BlockExtractor())->emit());
         $this->writeJson("{$this->output}/cpt.schema.json", (new Extract\CptExtractor())->emit());
         $this->writeJson("{$this->output}/taxonomy.schema.json", (new Extract\TaxonomyExtractor())->emit());
+
         $emitter = new Emit\SchemaEmitter();
+
+        // Copy all hand-curated refs (utility refs + all 36 per-type field refs)
+        // from src/templates/refs/ to the output directory. These ship verbatim —
+        // richer constraints than runtime FieldExtractor can produce.
+        //
+        // FieldExtractor is retained in src/Extract/ as a discovery aid: invoke it
+        // manually to inspect ACF's per-type defaults map and detect new field
+        // types added by an ACF upgrade. v0.1.0 ships hand-curated refs because
+        // runtime introspection yields only flat type inference ({type: [string,null]})
+        // while the curated schemas carry patterns, $refs, enums, and nested objects.
+        // See FIELD_TYPE_ORDER in SchemaEmitter for the add-a-new-type workflow.
         $emitter->copyStaticRefs($this->output);
 
-        $fields = (new Extract\FieldExtractor())->emitAll();
-        foreach ($fields as $type => $schema) {
-            $this->writeJson("{$this->output}/refs/field-{$type}.schema.json", $schema);
-        }
+        $this->writeJson("{$this->output}/acf.schema.json", $emitter->emitAcfSchema());
 
-        $this->writeJson("{$this->output}/acf.schema.json", $emitter->emitAcfSchema(array_keys($fields)));
-
-        echo "Wrote " . (4 + count($fields) + 4) . " schemas to {$this->output}/\n";
-        // 4 root (block, cpt, taxonomy, acf) + N field refs (typically 35) + 4 static utility refs
+        $fieldCount = count(glob("{$this->output}/refs/field-*.schema.json") ?: []);
+        $utilityCount = count(glob("{$this->output}/refs/*.schema.json") ?: []) - $fieldCount;
+        echo "Wrote " . (4 + $fieldCount + $utilityCount) . " schemas to {$this->output}/\n";
+        // 4 root (block, cpt, taxonomy, acf) + N field refs (currently 36) + 4 utility refs
     }
 
     private function bootstrapWordPress(): void {

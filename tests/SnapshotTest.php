@@ -11,11 +11,63 @@ final class SnapshotTest extends TestCase {
     private const WP_ROOT_ENV = 'ACF_SCHEMA_TEST_WP_ROOT';
     private const SCHEMAS_DIR = __DIR__ . '/../schemas';
 
+    /** @var list<callable>|null Snapshot of error handlers captured in setUp, or null when test is skipped */
+    private ?array $errorHandlersBefore = null;
+
     protected function setUp(): void {
         if (getenv(self::WP_ROOT_ENV) === false) {
             $this->markTestSkipped(
                 'Set ' . self::WP_ROOT_ENV . '=/path/to/wp/install to run snapshot test'
             );
+        }
+
+        // Capture the error-handler stack before the test so tearDown can restore
+        // it to exactly this state after WordPress bootstrap adds its own handlers.
+        // This snapshot is only taken when the test is going to run (not skipped).
+        $this->errorHandlersBefore = $this->snapshotErrorHandlers();
+    }
+
+    protected function tearDown(): void {
+        if ($this->errorHandlersBefore === null) {
+            // Test was skipped in setUp — no handlers were captured, nothing to restore.
+            return;
+        }
+        // WordPress bootstrap registers error handlers that it does not restore.
+        // PHPUnit 12 marks a test risky when the handler stack differs before vs.
+        // after. Restore to the pre-test snapshot: drain to empty, re-push originals.
+        $this->drainErrorHandlers();
+        foreach ($this->errorHandlersBefore as $handler) {
+            set_error_handler($handler);
+        }
+    }
+
+    /** @return list<callable> */
+    private function snapshotErrorHandlers(): array {
+        $handlers = [];
+        while (true) {
+            $prev = set_error_handler(static fn () => false);
+            restore_error_handler(); // remove the sentinel
+            if ($prev === null) {
+                break;
+            }
+            $handlers[] = $prev;
+            restore_error_handler(); // pop the real handler
+        }
+        $handlers = array_reverse($handlers);
+        foreach ($handlers as $h) {
+            set_error_handler($h);
+        }
+        return $handlers;
+    }
+
+    private function drainErrorHandlers(): void {
+        while (true) {
+            $prev = set_error_handler(static fn () => false);
+            restore_error_handler();
+            if ($prev === null) {
+                break;
+            }
+            restore_error_handler();
         }
     }
 

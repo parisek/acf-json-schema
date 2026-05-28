@@ -6,15 +6,42 @@ namespace Parisek\AcfJsonSchema\Emit;
 final class SchemaEmitter {
 
     /**
+     * Canonical ACF field-type slug order for the acf.schema.json anyOf
+     * discriminator array. This list is hand-curated and intentionally stable
+     * across ACF versions — it matches the committed schemas/acf.schema.json.
+     * New field types added by ACF upgrades should be appended here in a
+     * deliberate PR rather than silently reordered by runtime discovery.
+     *
+     * @var list<string>
+     */
+    private const FIELD_TYPE_ORDER = [
+        'text', 'textarea', 'wysiwyg', 'number', 'range',
+        'email', 'url', 'password',
+        'image', 'gallery', 'file',
+        'link', 'post_object', 'page_link', 'relationship', 'taxonomy', 'user',
+        'select', 'checkbox', 'radio', 'true_false', 'button_group',
+        'color_picker', 'icon_picker',
+        'date_picker', 'time_picker', 'date_time_picker',
+        'google_map',
+        'repeater', 'group', 'flexible_content', 'clone',
+        'tab', 'accordion', 'message', 'oembed',
+    ];
+
+    /**
      * Assembles the top-level acf.schema.json (Field Group root schema).
      *
-     * @param list<string> $fieldTypes  Ordered list of ACF field type slugs,
-     *                                  typically from FieldExtractor::emitAll().
+     * Uses the static FIELD_TYPE_ORDER list rather than the runtime-discovered
+     * type list — this ensures stable, deterministic output that matches the
+     * committed schemas/acf.schema.json regardless of ACF's internal iteration
+     * order. To add a new field type: append to FIELD_TYPE_ORDER, add the
+     * corresponding field-<type>.schema.json to src/templates/refs/, and
+     * add the entry to schemas/acf.schema.json and schemas/refs/.
+     *
      * @return array<string, mixed>
      */
-    public function emitAcfSchema(array $fieldTypes): array {
+    public function emitAcfSchema(): array {
         $branches = [];
-        foreach ($fieldTypes as $type) {
+        foreach (self::FIELD_TYPE_ORDER as $type) {
             $branches[] = [
                 'if'   => ['properties' => ['type' => ['const' => $type]]],
                 'then' => ['$ref' => "refs/field-{$type}.schema.json"],
@@ -63,29 +90,40 @@ final class SchemaEmitter {
     }
 
     /**
-     * Copies the four static utility ref schemas from the bundled templates
-     * directory into the generator output directory.
+     * Returns the canonical field type order used in acf.schema.json.
      *
-     * These files do not change per ACF version — they are hand-curated and
-     * kept verbatim. IMPORTANT: any hand-edit to the committed
-     * schemas/refs/{field,icon,location-rule,permalink-rewrite}.schema.json
-     * files MUST be mirrored into src/templates/refs/ so the copies survive
-     * the next generator run.
+     * @return list<string>
+     */
+    public function fieldTypeOrder(): array {
+        return self::FIELD_TYPE_ORDER;
+    }
+
+    /**
+     * Copies ALL hand-curated ref schemas from the bundled templates directory
+     * into the generator output directory. This includes both the four utility
+     * refs (field, icon, location-rule, permalink-rewrite) and all 36 per-type
+     * field refs (field-text, field-select, …).
+     *
+     * These files are hand-curated and ship verbatim — they carry richer
+     * constraints (patterns, $refs, enums, nested objects) than runtime
+     * extraction can produce. When ACF adds a new field type, the workflow is:
+     *   1. Add field-<type>.schema.json to src/templates/refs/
+     *   2. Add field-<type>.schema.json to schemas/refs/ (distribution copy)
+     *   3. Add the type slug to SchemaEmitter::FIELD_TYPE_ORDER
+     *   4. Add the anyOf entry to schemas/acf.schema.json
+     *
+     * IMPORTANT: any edit to schemas/refs/ files MUST be mirrored back into
+     * src/templates/refs/ — the template directory is the source of truth;
+     * schemas/refs/ is the distribution copy committed for downstream consumers.
      */
     public function copyStaticRefs(string $output): void {
         $templates = __DIR__ . '/../templates/refs';
-        $files = [
-            'field.schema.json',
-            'icon.schema.json',
-            'location-rule.schema.json',
-            'permalink-rewrite.schema.json',
-        ];
         $refDir = "{$output}/refs";
         if (!is_dir($refDir)) {
             mkdir($refDir, 0755, true);
         }
-        foreach ($files as $file) {
-            copy("{$templates}/{$file}", "{$refDir}/{$file}");
+        foreach (glob("{$templates}/*.schema.json") ?: [] as $src) {
+            copy($src, "{$refDir}/" . basename($src));
         }
     }
 }

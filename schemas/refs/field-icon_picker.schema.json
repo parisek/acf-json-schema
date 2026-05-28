@@ -1,0 +1,12 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-icon_picker.schema.json",
+    "title": "ACF Field — Icon Picker",
+    "type": "object",
+    "properties": {
+        "library": { "type": ["string", "null"] },
+        "tabs": { "type": "array" },
+        "return_format": { "enum": ["string", "array"] },
+        "default_value": { "type": "array" }
+    }
+}

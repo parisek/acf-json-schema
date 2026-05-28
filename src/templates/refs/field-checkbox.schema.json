@@ -1,0 +1,21 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-checkbox.schema.json",
+    "title": "ACF Field — Checkbox",
+    "type": "object",
+    "required": ["return_format"],
+    "properties": {
+        "choices": {
+            "oneOf": [
+                { "type": "array" },
+                { "type": "object" }
+            ]
+        },
+        "default_value": { "type": ["string", "array", "null"] },
+        "allow_custom": { "enum": [0, 1] },
+        "save_custom": { "enum": [0, 1] },
+        "layout": { "enum": ["vertical", "horizontal"] },
+        "toggle": { "enum": [0, 1] },
+        "return_format": { "enum": ["value", "label", "array"] }
+    }
+}
