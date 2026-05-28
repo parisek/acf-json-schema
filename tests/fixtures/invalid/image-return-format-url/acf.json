@@ -1,0 +1,28 @@
+{
+    "key": "group_test_image_bad_format",
+    "title": "Test: image return_format url (forbidden)",
+    "fields": [
+        {
+            "key": "field_test_image",
+            "label": "Image",
+            "name": "image",
+            "type": "image",
+            "allow_in_bindings": 0,
+            "return_format": "url",
+            "wpml_cf_preferences": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "page"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "active": true,
+    "modified": 1716000000,
+    "acfml_field_group_mode": "advanced"
+}

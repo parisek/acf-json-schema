@@ -1,0 +1,5 @@
+{
+    "description": "Image fields must use return_format: array. return_format: url is forbidden because Helpers::formatFields expects the array shape with src/width/height/alt keys.",
+    "schema": "https://schemas.parisek.dev/acf/acf.schema.json",
+    "min_violations": 1
+}

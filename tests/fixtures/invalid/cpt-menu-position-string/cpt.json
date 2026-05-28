@@ -1,0 +1,7 @@
+{
+    "key": "post_type_project",
+    "title": "Projects",
+    "post_type": "project",
+    "active": true,
+    "menu_position": "25"
+}

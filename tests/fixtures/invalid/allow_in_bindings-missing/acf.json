@@ -1,0 +1,25 @@
+{
+    "key": "group_test_missing_binding",
+    "title": "Test: allow_in_bindings missing",
+    "fields": [
+        {
+            "key": "field_test_title",
+            "label": "Title",
+            "name": "title",
+            "type": "text"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "page"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "active": true,
+    "modified": 1716000000,
+    "acfml_field_group_mode": "advanced"
+}

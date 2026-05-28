@@ -1,0 +1,5 @@
+{
+    "description": "CPT menu_position must be a number, not a string. ACF UI exposes it as a number input; string values indicate a serialisation error.",
+    "schema": "https://schemas.parisek.dev/acf/cpt.schema.json",
+    "min_violations": 1
+}

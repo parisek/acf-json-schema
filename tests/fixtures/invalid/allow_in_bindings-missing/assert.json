@@ -1,0 +1,5 @@
+{
+    "description": "Every ACF field must declare allow_in_bindings (0 or 1). Omitting it breaks Block Bindings API compatibility checks.",
+    "schema": "https://schemas.parisek.dev/acf/acf.schema.json",
+    "min_violations": 1
+}

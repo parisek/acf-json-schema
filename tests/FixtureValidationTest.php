@@ -21,6 +21,7 @@ final class FixtureValidationTest extends TestCase {
         $this->validator = new Validator($schemasRoot . '/');
     }
 
+    /** @return iterable<string, array{string}> */
     public static function validFixturesProvider(): iterable {
         $root = __DIR__ . '/fixtures/valid';
         if (!is_dir($root)) {
@@ -66,6 +67,7 @@ final class FixtureValidationTest extends TestCase {
         return null;
     }
 
+    /** @return iterable<string, array{string}> */
     public static function invalidFixturesProvider(): iterable {
         $root = __DIR__ . '/fixtures/invalid';
         if (!is_dir($root)) {
