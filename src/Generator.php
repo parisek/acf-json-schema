@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Parisek\AcfJsonSchema;
 
+use Parisek\AcfJsonSchema\Extract;
+
 final class Generator {
 
     public function __construct(
@@ -15,7 +17,10 @@ final class Generator {
         $this->bootstrapWordPress();
         $this->verifyAcfPro();
         $this->writeMetaSidecar();
-        echo "Generator ran successfully (stub — extractors come next).\n";
+        $this->writeJson("{$this->output}/block.schema.json", (new Extract\BlockExtractor())->emit());
+        $this->writeJson("{$this->output}/cpt.schema.json", (new Extract\CptExtractor())->emit());
+        $this->writeJson("{$this->output}/taxonomy.schema.json", (new Extract\TaxonomyExtractor())->emit());
+        echo "Wrote 3 schemas to {$this->output}/\n";
     }
 
     private function bootstrapWordPress(): void {

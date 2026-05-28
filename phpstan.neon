@@ -6,3 +6,6 @@ parameters:
         - bin
     excludePaths:
         - tests/fixtures/*
+    scanFiles:
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+        - vendor/php-stubs/acf-pro-stubs/acf-pro-stubs.php
