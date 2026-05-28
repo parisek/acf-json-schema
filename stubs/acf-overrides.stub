@@ -1,0 +1,36 @@
+<?php
+/**
+ * Local PHPStan stub overrides for ACF Pro functions whose return types are
+ * incorrectly declared as void in vendor/php-stubs/acf-pro-stubs.
+ *
+ * PHPStan's stubFiles mechanism (phpstan.neon → parameters.stubFiles) lets us
+ * supply corrected signatures without forking the upstream stubs package.
+ *
+ * Note: acf_field must be declared here because PHPStan resolves stub-file
+ * types in isolation (stubFiles are parsed before scanFiles become available).
+ */
+
+namespace {
+    /**
+     * Minimal re-declaration so this stub file can reference acf_field in
+     * the corrected return type below. The full class definition is provided
+     * by the upstream scanFile (acf-pro-stubs.php); PHPStan merges both.
+     */
+    class acf_field {
+        public string $name = '';
+        public string $label = '';
+        /** @var array<string, mixed> */
+        public array $defaults = [];
+    }
+
+    /**
+     * Returns a map of registered ACF field-type instances keyed by type slug.
+     *
+     * The upstream acf-pro-stubs.php incorrectly annotates this as @return void.
+     * This stub corrects the return type so PHPStan can verify iteration over it.
+     *
+     * @param  array<string, mixed> $args Optional filter args (e.g. ['category' => 'basic']).
+     * @return array<string, acf_field>
+     */
+    function acf_get_field_types(array $args = []): array {}
+}

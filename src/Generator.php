@@ -20,7 +20,11 @@ final class Generator {
         $this->writeJson("{$this->output}/block.schema.json", (new Extract\BlockExtractor())->emit());
         $this->writeJson("{$this->output}/cpt.schema.json", (new Extract\CptExtractor())->emit());
         $this->writeJson("{$this->output}/taxonomy.schema.json", (new Extract\TaxonomyExtractor())->emit());
-        echo "Wrote 3 schemas to {$this->output}/\n";
+        $fields = (new Extract\FieldExtractor())->emitAll();
+        foreach ($fields as $type => $schema) {
+            $this->writeJson("{$this->output}/refs/field-{$type}.schema.json", $schema);
+        }
+        echo "Wrote " . (3 + count($fields)) . " schemas to {$this->output}/\n";
     }
 
     private function bootstrapWordPress(): void {
