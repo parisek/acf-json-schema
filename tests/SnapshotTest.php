@@ -28,7 +28,8 @@ final class SnapshotTest extends TestCase {
     }
 
     protected function tearDown(): void {
-        if ($this->errorHandlersBefore === null) {
+        $handlers = $this->errorHandlersBefore;
+        if ($handlers === null) {
             // Test was skipped in setUp — no handlers were captured, nothing to restore.
             return;
         }
@@ -36,7 +37,7 @@ final class SnapshotTest extends TestCase {
         // PHPUnit 12 marks a test risky when the handler stack differs before vs.
         // after. Restore to the pre-test snapshot: drain to empty, re-push originals.
         $this->drainErrorHandlers();
-        foreach ($this->errorHandlersBefore as $handler) {
+        foreach ($handlers as $handler) {
             set_error_handler($handler);
         }
     }
