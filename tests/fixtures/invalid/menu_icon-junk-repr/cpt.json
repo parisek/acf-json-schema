@@ -1,0 +1,7 @@
+{
+    "key": "post_type_building",
+    "title": "Buildings",
+    "post_type": "building",
+    "menu_icon": "{'type': 'dashicons', 'value': 'dashicons-building'}",
+    "active": true
+}

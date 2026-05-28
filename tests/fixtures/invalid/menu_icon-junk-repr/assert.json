@@ -1,0 +1,6 @@
+{
+    "description": "Python str(dict) repr must be rejected by icon.schema.json oneOf",
+    "schema": "https://schemas.parisek.dev/acf/refs/icon.schema.json",
+    "data_path": "/menu_icon",
+    "min_violations": 1
+}

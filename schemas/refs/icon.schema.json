@@ -1,0 +1,33 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/icon.schema.json",
+    "title": "WP admin / block icon",
+    "description": "Accepted forms for `menu_icon` (CPT JSON) and `icon` (block.json). Reject Python repr / arbitrary strings.",
+    "oneOf": [
+        {
+            "type": "string",
+            "pattern": "^dashicons-[a-z0-9-]+$",
+            "description": "WordPress Dashicons class — admin menu, block inserter sidebar."
+        },
+        {
+            "type": "string",
+            "pattern": "^<svg[^>]*>.*</svg>$",
+            "description": "Inline SVG markup. For block.json icon, must additionally contain 'currentColor' (enforced by block.schema.json extension)."
+        },
+        {
+            "type": "string",
+            "pattern": "^data:image/svg\\+xml(;base64)?,",
+            "description": "Base64-encoded SVG as data URI."
+        },
+        {
+            "type": "string",
+            "enum": ["none", ""],
+            "description": "'none' disables the icon; '' uses WP default."
+        },
+        {
+            "type": "string",
+            "pattern": "^https?://",
+            "description": "Remote URL — discouraged (latency, CSP). Allowed for legacy compatibility."
+        }
+    ]
+}
