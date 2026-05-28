@@ -186,4 +186,85 @@ final class ValidatorTest extends TestCase {
         );
         $this->assertTrue($result->isValid());
     }
+
+    public function test_select_field_value_return_format_passes(): void {
+        $field = (object) [
+            'return_format' => 'value',
+            'choices' => (object) ['a' => 'A', 'b' => 'B'],
+            'multiple' => 0
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-select.schema.json',
+            $field
+        );
+        $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
+    }
+
+    public function test_select_field_unknown_return_format_fails(): void {
+        $field = (object) ['return_format' => 'BAD'];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-select.schema.json',
+            $field
+        );
+        $this->assertFalse($result->isValid());
+    }
+
+    public function test_gallery_field_url_return_format_fails(): void {
+        $field = (object) ['return_format' => 'url'];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-gallery.schema.json',
+            $field
+        );
+        $this->assertFalse($result->isValid(), 'gallery must require return_format const "array"');
+    }
+
+    public function test_flexible_content_with_layouts_passes(): void {
+        $field = (object) [
+            'layouts' => [
+                (object) [
+                    'key' => 'layout_hero',
+                    'name' => 'hero',
+                    'label' => 'Hero',
+                    'sub_fields' => [
+                        (object) ['key' => 'field_title', 'label' => 'Title', 'name' => 'title', 'type' => 'text', 'allow_in_bindings' => 0]
+                    ]
+                ]
+            ]
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-flexible_content.schema.json',
+            $field
+        );
+        $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
+    }
+
+    public function test_flexible_content_layout_missing_name_fails(): void {
+        $field = (object) [
+            'layouts' => [
+                (object) [
+                    'key' => 'layout_hero',
+                    'label' => 'Hero'
+                ]
+            ]
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-flexible_content.schema.json',
+            $field
+        );
+        $this->assertFalse($result->isValid(), 'layout missing required name must fail');
+    }
+
+    public function test_repeater_with_sub_fields_passes(): void {
+        $field = (object) [
+            'sub_fields' => [
+                (object) ['key' => 'field_x', 'label' => 'X', 'name' => 'x', 'type' => 'text', 'allow_in_bindings' => 0]
+            ],
+            'layout' => 'block'
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-repeater.schema.json',
+            $field
+        );
+        $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
+    }
 }

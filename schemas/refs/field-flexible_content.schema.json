@@ -1,0 +1,31 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-flexible_content.schema.json",
+    "title": "ACF Field — Flexible Content",
+    "type": "object",
+    "required": ["layouts"],
+    "properties": {
+        "layouts": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["key", "name", "label"],
+                "properties": {
+                    "key": { "type": "string", "pattern": "^layout_" },
+                    "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                    "label": { "type": "string", "minLength": 1 },
+                    "display": { "enum": ["block", "table", "row"] },
+                    "min": { "type": ["integer", "string"] },
+                    "max": { "type": ["integer", "string"] },
+                    "sub_fields": {
+                        "type": "array",
+                        "items": { "$ref": "field.schema.json" }
+                    }
+                }
+            }
+        },
+        "min": { "type": ["integer", "string"] },
+        "max": { "type": ["integer", "string"] },
+        "button_label": { "type": "string" }
+    }
+}

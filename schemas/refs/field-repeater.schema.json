@@ -1,0 +1,17 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-repeater.schema.json",
+    "title": "ACF Field — Repeater",
+    "type": "object",
+    "properties": {
+        "sub_fields": {
+            "type": "array",
+            "items": { "$ref": "field.schema.json" }
+        },
+        "min": { "type": ["integer", "string"] },
+        "max": { "type": ["integer", "string"] },
+        "layout": { "enum": ["table", "block", "row"] },
+        "button_label": { "type": "string" },
+        "collapsed": { "type": "string" }
+    }
+}

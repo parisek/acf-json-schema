@@ -1,0 +1,22 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/refs/field-select.schema.json",
+    "title": "ACF Field — Select",
+    "type": "object",
+    "required": ["return_format"],
+    "properties": {
+        "choices": {
+            "oneOf": [
+                { "type": "array" },
+                { "type": "object" }
+            ]
+        },
+        "default_value": { "type": ["string", "array", "null"] },
+        "allow_null": { "enum": [0, 1] },
+        "multiple": { "enum": [0, 1] },
+        "ui": { "enum": [0, 1] },
+        "ajax": { "enum": [0, 1] },
+        "return_format": { "enum": ["value", "label", "array"] },
+        "placeholder": { "type": "string" }
+    }
+}
