@@ -1,0 +1,86 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+// Resolve the autoloader whether installed as a dependency (vendor/bin) or run
+// from the package root.
+$autoloads = [
+    __DIR__ . '/../vendor/autoload.php',            // standalone checkout
+    __DIR__ . '/../../../autoload.php',             // installed in a consumer's vendor/
+];
+foreach ($autoloads as $a) {
+    if (file_exists($a)) {
+        require_once $a;
+        break;
+    }
+}
+
+use Parisek\AcfJsonSchema\Lint\AcfLinter;
+
+$args = array_slice($argv, 1);
+$strict = in_array('--strict', $args, true);
+$fix = in_array('--fix', $args, true);
+$paths = array_values(array_filter($args, static fn (string $a): bool => !str_starts_with($a, '-')));
+
+if (in_array('--help', $args, true) || $paths === []) {
+    fwrite(STDERR, <<<USAGE
+    acf-lint — validate ACF / CPT / taxonomy / block JSON against parisek/acf-json-schema.
+
+    Usage:
+      acf-lint [--strict] [--fix] <path>...
+
+      <path>     File or directory (directories are walked recursively for *.json)
+      --strict   Exit 1 if any file has findings (CI gate)
+      --fix      Auto-bump stale/missing `modified` timestamps
+
+    Exit codes: 0 ok (or findings without --strict), 1 findings under --strict / bad args.
+
+    USAGE);
+    exit($paths === [] ? 1 : 0);
+}
+
+$linter = new AcfLinter(__DIR__ . '/../schemas');
+$files = $linter->collectJsonFiles($paths);
+
+$errorFiles = 0;
+$okFiles = 0;
+$skipped = 0;
+$fixedFiles = 0;
+$totalErrors = 0;
+
+foreach ($files as $file) {
+    $r = $linter->lintFile($file, $fix);
+    if ($r->fixed) {
+        $fixedFiles++;
+    }
+    if ($r->skipped) {
+        $skipped++;
+        continue;
+    }
+    if ($r->valid) {
+        $okFiles++;
+        continue;
+    }
+
+    $errorFiles++;
+    $totalErrors += max(1, count($r->errors));
+    fwrite(STDERR, "\033[31m✗\033[0m {$r->path} ({$r->kind})\n");
+    foreach ($r->errors as $pointer => $message) {
+        $line = is_string($message) ? $message : (string) json_encode($message);
+        fwrite(STDERR, "    \033[33m{$pointer}\033[0m — {$line}\n");
+    }
+}
+
+$summary = count($files) . " files scanned, \033[32m{$okFiles} OK\033[0m";
+if ($errorFiles) {
+    $summary .= ", \033[31m{$errorFiles} with errors ({$totalErrors})\033[0m";
+}
+if ($fixedFiles) {
+    $summary .= ", \033[33m{$fixedFiles} fixed\033[0m";
+}
+if ($skipped) {
+    $summary .= ", {$skipped} skipped";
+}
+fwrite(STDOUT, $summary . "\n");
+
+exit(($strict && $errorFiles > 0) ? 1 : 0);
