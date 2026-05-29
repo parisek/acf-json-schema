@@ -78,4 +78,27 @@ final class AcfLinterTest extends TestCase {
             @rmdir($dir);
         }
     }
+
+    public function test_fix_bumps_stale_modified(): void {
+        $dir = sys_get_temp_dir() . '/acf-lint-fix-' . getmypid();
+        @mkdir($dir);
+        $file = $dir . '/foo.json';
+        // CPT shape (post_type) with a pre-2020 modified → should be bumped.
+        file_put_contents($file, (string) json_encode([
+            'key' => 'post_type_x', 'title' => 'X', 'post_type' => 'x',
+            'modified' => 0,
+        ]));
+        try {
+            $before = time();
+            $result = $this->linter->lintFile($file, true);
+            self::assertTrue($result->fixed);
+            $after = json_decode((string) file_get_contents($file));
+            self::assertInstanceOf(\stdClass::class, $after);
+            self::assertIsInt($after->modified);
+            self::assertGreaterThanOrEqual($before, $after->modified);
+        } finally {
+            @unlink($file);
+            @rmdir($dir);
+        }
+    }
 }
