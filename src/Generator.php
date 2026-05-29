@@ -8,6 +8,13 @@ use Parisek\AcfJsonSchema\Extract;
 
 final class Generator {
 
+    /**
+     * Flips true once wp-load.php has returned and its output buffer is cleaned.
+     * The bootstrap shutdown guard reads it to avoid mislabelling a later,
+     * non-bootstrap fatal as a "WordPress bootstrap failed" diagnostic.
+     */
+    private bool $bootstrapComplete = false;
+
     public function __construct(
         private readonly string $wpRoot,
         private readonly string $output,
@@ -45,12 +52,35 @@ final class Generator {
     }
 
     private function bootstrapWordPress(): void {
-        ob_start();
         if (!defined('ABSPATH')) {
             define('WP_USE_THEMES', false);
         }
+
+        // WP prints notices/deprecations during load; buffer them so they don't
+        // corrupt our output. But a fatal inside wp-load.php (DB down, corrupt
+        // install) would otherwise be silently discarded by ob_end_clean(),
+        // leaving the operator with no diagnostic. Register a shutdown guard that
+        // forwards the buffered output to stderr only when the process is dying
+        // on a fatal during bootstrap. The $booted flag scopes the guard to the
+        // bootstrap window: once wp-load.php has returned and the buffer is
+        // cleaned, a later fatal elsewhere in the run must NOT be mislabelled as
+        // a bootstrap failure (its buffer would be empty/stale anyway).
+        ob_start();
+        register_shutdown_function(function (): void {
+            if ($this->bootstrapComplete) {
+                return;
+            }
+            $buffer = ob_get_level() > 0 ? (string) ob_get_clean() : '';
+            $err = error_get_last();
+            $fatal = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
+            if ($err !== null && in_array($err['type'], $fatal, true)) {
+                fwrite(STDERR, "WordPress bootstrap failed:\n{$buffer}\n");
+            }
+        });
+
         require_once "{$this->wpRoot}/wp-load.php";
         ob_end_clean();
+        $this->bootstrapComplete = true;
     }
 
     private function verifyAcfPro(): void {

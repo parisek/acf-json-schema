@@ -1,0 +1,18 @@
+{
+    "key": "group_test",
+    "title": "Test",
+    "fields": [
+        {
+            "key": "field_img",
+            "label": "Image",
+            "name": "image",
+            "type": "image",
+            "allow_in_bindings": 0,
+            "wpml_cf_preferences": 1
+        }
+    ],
+    "location": [[{"param": "post_type", "operator": "==", "value": "page"}]],
+    "modified": 1716000000,
+    "active": true,
+    "acfml_field_group_mode": "advanced"
+}

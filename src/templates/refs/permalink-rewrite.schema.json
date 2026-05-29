@@ -7,8 +7,8 @@
     "required": ["permalink_rewrite"],
     "properties": {
         "permalink_rewrite": {
-            "description": "Rewrite strategy. no_permalink = use post_type slug as-is, post_type_key = WP default, custom_permalink = use the `slug` field below.",
-            "enum": ["no_permalink", "post_type_key", "custom_permalink"]
+            "description": "Rewrite strategy. no_permalink = no rewrite; post_type_key / taxonomy_key = use the post-type / taxonomy key as the slug (WP default); custom_permalink = use the `slug` field below. ACF uses post_type_key for CPTs and taxonomy_key for taxonomies.",
+            "enum": ["no_permalink", "post_type_key", "taxonomy_key", "custom_permalink"]
         },
         "slug": {
             "description": "The URL prefix when permalink_rewrite is custom_permalink. ACF appends /%postname%/ automatically — do not include it here.",
@@ -24,6 +24,10 @@
         },
         "pages": {
             "description": "String-encoded boolean.",
+            "enum": ["0", "1"]
+        },
+        "rewrite_hierarchical": {
+            "description": "String-encoded boolean — taxonomy rewrite option (ACF taxonomy JSON).",
             "enum": ["0", "1"]
         }
     },

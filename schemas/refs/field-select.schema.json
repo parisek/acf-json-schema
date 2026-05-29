@@ -11,7 +11,7 @@
                 { "type": "object" }
             ]
         },
-        "default_value": { "type": ["string", "array", "null"] },
+        "default_value": { "type": ["string", "array", "null", "boolean"], "description": "ACF serializes an unset default as boolean false." },
         "allow_null": { "enum": [0, 1] },
         "multiple": { "enum": [0, 1] },
         "ui": { "enum": [0, 1] },

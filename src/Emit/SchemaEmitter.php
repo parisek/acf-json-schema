@@ -6,11 +6,11 @@ namespace Parisek\AcfJsonSchema\Emit;
 final class SchemaEmitter {
 
     /**
-     * Canonical ACF field-type slug order for the acf.schema.json anyOf
-     * discriminator array. This list is hand-curated and intentionally stable
-     * across ACF versions — it matches the committed schemas/acf.schema.json.
-     * New field types added by ACF upgrades should be appended here in a
-     * deliberate PR rather than silently reordered by runtime discovery.
+     * Canonical ACF field-type slug order for the acf.schema.json discriminator.
+     * This list is hand-curated and intentionally stable across ACF versions —
+     * it matches the committed schemas/acf.schema.json. New field types added by
+     * ACF upgrades should be appended here in a deliberate PR rather than
+     * silently reordered by runtime discovery.
      *
      * @var list<string>
      */
@@ -40,6 +40,16 @@ final class SchemaEmitter {
      * @return array<string, mixed>
      */
     public function emitAcfSchema(): array {
+        // Discriminator: each if/then pair sits directly in the items `allOf`.
+        // For a field whose `type` does not match a branch's `if`, that branch is
+        // vacuously satisfied (if-false ⇒ pass); the single branch whose `if`
+        // matches has its `then` ref ENFORCED. This is the correct JSON Schema
+        // 2020-12 discriminated-union construct.
+        //
+        // Do NOT wrap these in `anyOf`: under `anyOf` the non-matching branches
+        // are vacuously valid, so `anyOf` succeeds regardless of whether the
+        // matching `then` ref holds — silently disabling all per-type validation
+        // (missing required props and base-overlapping constraints slip through).
         $branches = [];
         foreach (self::FIELD_TYPE_ORDER as $type) {
             $branches[] = [
@@ -53,7 +63,11 @@ final class SchemaEmitter {
             '$id'     => 'https://schemas.parisek.dev/acf/acf.schema.json',
             'title'   => 'ACF Field Group',
             'type'    => 'object',
-            'required' => ['key', 'title', 'fields', 'location', 'modified', 'active', 'acfml_field_group_mode'],
+            // acfml_field_group_mode is intentionally NOT required: ACF only emits
+            // it when ACFML (WPML) is active, so plain-ACF exports omit it. It is
+            // still value-constrained in 'properties' below, so when present it
+            // must be "advanced" (required-only-when-present semantics).
+            'required' => ['key', 'title', 'fields', 'location', 'modified', 'active'],
             'properties' => [
                 'key'    => ['type' => 'string', 'pattern' => '^group_'],
                 'title'  => ['type' => 'string', 'minLength' => 1],
@@ -61,10 +75,10 @@ final class SchemaEmitter {
                     'type'  => 'array',
                     'items' => [
                         'unevaluatedProperties' => false,
-                        'allOf' => [
-                            ['$ref' => 'refs/field.schema.json'],
-                            ['anyOf' => $branches],
-                        ],
+                        'allOf' => array_merge(
+                            [['$ref' => 'refs/field.schema.json']],
+                            $branches,
+                        ),
                     ],
                 ],
                 'location' => [
@@ -84,7 +98,7 @@ final class SchemaEmitter {
                 'description'           => ['type' => 'string', 'maxLength' => 0],
                 'modified'              => ['type' => 'integer', 'minimum' => 0],
                 'acfml_field_group_mode' => ['const' => 'advanced'],
-                'show_in_rest'          => ['enum' => [0, 1]],
+                'show_in_rest'          => ['enum' => [0, 1, true, false]],
             ],
         ];
     }

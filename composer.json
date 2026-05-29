@@ -34,7 +34,7 @@
     "bin": ["bin/acf-schema-gen"],
     "scripts": {
         "test":     "vendor/bin/phpunit",
-        "phpstan":  "vendor/bin/phpstan analyse",
+        "phpstan":  "vendor/bin/phpstan analyse --memory-limit=512M",
         "check":    ["@test", "@phpstan"]
     },
     "extra": {

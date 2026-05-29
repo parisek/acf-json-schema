@@ -2,5 +2,10 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-message.schema.json",
     "title": "ACF Field — Message",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "message": { "type": "string" },
+        "new_lines": { "enum": ["wpautop", "br", ""], "description": "How newlines render: paragraphs, <br>, or no formatting." },
+        "esc_html": { "enum": [0, 1] }
+    }
 }

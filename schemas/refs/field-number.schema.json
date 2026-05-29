@@ -2,5 +2,10 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-number.schema.json",
     "title": "ACF Field — Number",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "min": { "type": ["number", "string", "null"], "description": "ACF stores an unset bound as an empty string." },
+        "max": { "type": ["number", "string", "null"] },
+        "step": { "type": ["number", "string", "null"] }
+    }
 }

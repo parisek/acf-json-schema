@@ -49,5 +49,13 @@ if (!is_dir($output)) {
     mkdir("{$output}/refs", 0755, true);
 }
 
-$generator = new Generator($wpRoot, $output, $pretty);
-$generator->run();
+try {
+    $generator = new Generator($wpRoot, $output, $pretty);
+    $generator->run();
+} catch (\Throwable $e) {
+    // Exit code 2 = WP / ACF bootstrap failure (matches the --help contract).
+    // Without this, an uncaught exception from verifyAcfPro() would exit 255,
+    // misleading CI/automation that branches on the documented exit codes.
+    fwrite(STDERR, "Error: {$e->getMessage()}\n");
+    exit(2);
+}

@@ -2,5 +2,16 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-post_object.schema.json",
     "title": "ACF Field — Post Object",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "post_type": { "type": ["array", "string"], "description": "Array of post-type slugs; ACF serializes 'no filter' as an empty string." },
+        "post_status": { "type": ["array", "string", "null"] },
+        "taxonomy": { "type": ["array", "string"], "description": "Array of 'taxonomy:term' filters; empty string when unset." },
+        "allow_null": { "enum": [0, 1] },
+        "multiple": { "enum": [0, 1] },
+        "return_format": { "enum": ["object", "id"] },
+        "ui": { "enum": [0, 1] },
+        "bidirectional": { "enum": [0, 1] },
+        "bidirectional_target": { "type": "array" }
+    }
 }

@@ -3,27 +3,140 @@
     "$id": "https://schemas.parisek.dev/acf/taxonomy.schema.json",
     "title": "ACF Taxonomy",
     "type": "object",
-    "required": ["key", "title", "taxonomy", "object_type", "active"],
+    "required": [
+        "key",
+        "title",
+        "taxonomy",
+        "object_type",
+        "active"
+    ],
     "properties": {
-        "key": { "type": "string", "pattern": "^taxonomy_" },
-        "title": { "type": "string", "minLength": 1 },
-        "taxonomy": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
-        "active": { "type": "boolean" },
-        "advanced_configuration": { "type": "boolean" },
-        "object_type": { "type": "array", "items": { "type": "string" } },
-        "labels": { "type": "object" },
-        "public": { "type": "boolean" },
-        "publicly_queryable": { "type": "boolean" },
-        "hierarchical": { "type": "boolean" },
-        "show_ui": { "type": "boolean" },
-        "show_in_menu": { "type": "boolean" },
-        "show_in_nav_menus": { "type": "boolean" },
-        "show_in_rest": { "type": "boolean" },
-        "show_admin_column": { "type": "boolean" },
-        "show_tagcloud": { "type": "boolean" },
-        "show_in_quick_edit": { "type": "boolean" },
-        "rewrite": { "$ref": "refs/permalink-rewrite.schema.json" },
-        "single_value": { "type": "boolean" },
-        "modified": { "type": "integer" }
+        "key": {
+            "type": "string",
+            "pattern": "^taxonomy_"
+        },
+        "title": {
+            "type": "string",
+            "minLength": 1
+        },
+        "taxonomy": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "active": {
+            "type": "boolean"
+        },
+        "advanced_configuration": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "object_type": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "labels": {
+            "type": "object"
+        },
+        "public": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "publicly_queryable": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "hierarchical": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "show_ui": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "show_in_menu": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "show_in_nav_menus": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "show_in_rest": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "show_admin_column": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "show_tagcloud": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "show_in_quick_edit": {
+            "enum": [
+                true,
+                false,
+                0,
+                1
+            ]
+        },
+        "rewrite": {
+            "$ref": "refs/permalink-rewrite.schema.json"
+        },
+        "single_value": {
+            "enum": [
+                true,
+                false,
+                0,
+                1,
+                null
+            ]
+        },
+        "modified": {
+            "type": "integer"
+        }
     }
 }

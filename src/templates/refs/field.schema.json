@@ -22,7 +22,7 @@
                 "image", "gallery", "file", "link",
                 "post_object", "page_link", "relationship", "taxonomy", "user",
                 "select", "checkbox", "radio", "true_false", "button_group",
-                "color_picker", "date_picker", "time_picker", "date_time_picker", "google_map",
+                "color_picker", "icon_picker", "date_picker", "time_picker", "date_time_picker", "google_map",
                 "repeater", "group", "flexible_content", "clone",
                 "tab", "accordion", "message", "oembed"
             ]
