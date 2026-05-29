@@ -41,4 +41,41 @@ final class AcfLinterTest extends TestCase {
     public function test_dispatch_unrecognized_returns_null(): void {
         self::assertNull($this->linter->dispatch('x/random.json', (object) ['foo' => 'bar']));
     }
+
+    public function test_lintfile_valid_acf_fixture_passes(): void {
+        $path = __DIR__ . '/../fixtures/valid/fellows/component-apartment-list/acf.json';
+        $result = $this->linter->lintFile($path, false);
+        self::assertSame('acf', $result->kind);
+        self::assertTrue($result->valid, (string) json_encode($result->errors));
+        self::assertFalse($result->skipped);
+    }
+
+    public function test_lintfile_unrecognized_is_skipped(): void {
+        $tmp = sys_get_temp_dir() . '/acf-lint-skip-' . getmypid() . '.json';
+        file_put_contents($tmp, '{"foo":"bar"}');
+        try {
+            $result = $this->linter->lintFile($tmp, false);
+            self::assertTrue($result->skipped);
+            self::assertNull($result->kind);
+        } finally {
+            @unlink($tmp);
+        }
+    }
+
+    public function test_lintfile_invalid_acf_reports_errors(): void {
+        $dir = sys_get_temp_dir() . '/acf-lint-bad-acf-' . getmypid();
+        @mkdir($dir);
+        $file = $dir . '/acf.json';
+        // acf.json by filename, but missing required keys → invalid.
+        file_put_contents($file, '{"key":"group_x"}');
+        try {
+            $result = $this->linter->lintFile($file, false);
+            self::assertSame('acf', $result->kind);
+            self::assertFalse($result->valid);
+            self::assertNotEmpty($result->errors);
+        } finally {
+            @unlink($file);
+            @rmdir($dir);
+        }
+    }
 }
