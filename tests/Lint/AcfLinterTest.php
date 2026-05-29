@@ -113,6 +113,108 @@ final class AcfLinterTest extends TestCase {
         }
     }
 
+    /**
+     * Write $data as a temp acf.json, lint it, return the result.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function lintAcf(array $data, bool $requireWpml): \Parisek\AcfJsonSchema\Lint\FileLintResult {
+        $dir = sys_get_temp_dir() . '/acf-lint-wpml-' . getmypid() . '-' . substr(md5(serialize($data)), 0, 8);
+        @mkdir($dir);
+        $file = $dir . '/acf.json';
+        file_put_contents($file, (string) json_encode($data));
+        try {
+            return $this->linter->lintFile($file, false, $requireWpml);
+        } finally {
+            @unlink($file);
+            @rmdir($dir);
+        }
+    }
+
+    /**
+     * @param array<string, mixed>                  $overrides
+     * @param list<array<string, mixed>>|null        $fields
+     * @return array<string, mixed> a structurally-valid field group (acfml/wpml omitted)
+     */
+    private static function group(array $overrides = [], ?array $fields = null): array {
+        return array_merge([
+            'key' => 'group_x', 'title' => 'T',
+            'fields' => $fields ?? [
+                ['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'text', 'allow_in_bindings' => 0],
+            ],
+            'location' => [[['param' => 'post_type', 'operator' => '==', 'value' => 'post']]],
+            'modified' => 1, 'active' => true,
+        ], $overrides);
+    }
+
+    public function test_wpml_off_missing_translation_keys_still_valid(): void {
+        $r = $this->lintAcf(self::group(), false);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    public function test_wpml_on_missing_acfml_mode_fails(): void {
+        // field carries wpml, but group root lacks acfml_field_group_mode
+        $r = $this->lintAcf(self::group(fields: [
+            ['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/acfml_field_group_mode', $r->errors);
+    }
+
+    public function test_wpml_on_missing_field_pref_fails(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced']), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    public function test_wpml_on_all_present_passes(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    public function test_wpml_recurses_into_repeater_sub_fields(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater', 'allow_in_bindings' => 0,
+                'wpml_cf_preferences' => 3,
+                'sub_fields' => [
+                    ['key' => 'field_s', 'label' => 'S', 'name' => 's', 'type' => 'text', 'allow_in_bindings' => 0],
+                ],
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/sub_fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    public function test_wpml_excludes_presentational_field_types(): void {
+        // a `tab` (valueless) without wpml must NOT be flagged; the text field has it.
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_t', 'label' => 'T', 'name' => 't', 'type' => 'tab', 'allow_in_bindings' => 0],
+            ['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    public function test_wpml_ignores_non_acf_files(): void {
+        // a CPT file — --wpml must not invent acfml/wpml findings here
+        $dir = sys_get_temp_dir() . '/acf-lint-wpml-cpt-' . getmypid();
+        @mkdir($dir);
+        $file = $dir . '/foo.json';
+        file_put_contents($file, (string) json_encode([
+            'key' => 'post_type_x', 'title' => 'X', 'post_type' => 'x', 'active' => true,
+        ]));
+        try {
+            $r = $this->linter->lintFile($file, false, true);
+            self::assertSame('cpt', $r->kind);
+            self::assertTrue($r->valid, (string) json_encode($r->errors));
+        } finally {
+            @unlink($file);
+            @rmdir($dir);
+        }
+    }
+
     public function test_whole_valid_corpus_lints_clean(): void {
         $root = __DIR__ . '/../fixtures/valid';
         $files = $this->linter->collectJsonFiles([$root]);

@@ -56,7 +56,13 @@ composer require --dev parisek/acf-json-schema
 vendor/bin/acf-lint --strict path/to/templates path/to/blocks
 ```
 
-`acf-lint` walks the given files/dirs, dispatches each JSON to the right bundled schema (block / acf / cpt / taxonomy), and reports findings. `--fix` bumps stale `modified` timestamps; `--strict` exits non-zero on any finding (CI gate). Files of an unrecognized shape are skipped.
+`acf-lint` walks the given files/dirs, dispatches each JSON to the right bundled schema (block / acf / cpt / taxonomy), and reports findings. Files of an unrecognized shape are skipped.
+
+| Flag | Effect |
+|---|---|
+| `--strict` | Exit non-zero on any finding (CI gate). |
+| `--fix` | Bump stale/missing `modified` timestamps. |
+| `--wpml` | Require WPML/ACFML translation keys to be **present**: `acfml_field_group_mode` on each field group and `wpml_cf_preferences` on every value-holding field (recurses into repeater/group/flexible-content; `tab`/`message`/`accordion` are exempt). Opt-in — the schemas keep these keys optional so non-WPML projects are unaffected. |
 
 ## For maintainers
 

@@ -58,7 +58,7 @@ final class AcfLinter {
      * valid=false result with a synthetic error so the caller still surfaces
      * them. Unrecognized shapes return skipped=true.
      */
-    public function lintFile(string $path, bool $fix): FileLintResult {
+    public function lintFile(string $path, bool $fix, bool $requireWpml = false): FileLintResult {
         $raw = @file_get_contents($path);
         if ($raw === false) {
             return new FileLintResult($path, null, false, [['error' => 'could not read file']], false, false);
@@ -96,7 +96,68 @@ final class AcfLinter {
             }
         }
 
-        return new FileLintResult($path, $kind, $result->isValid(), $errors, $fixed, false);
+        if ($requireWpml && $kind === 'acf') {
+            $errors = array_merge($errors, $this->wpmlPresenceFindings($json));
+        }
+
+        return new FileLintResult($path, $kind, $result->isValid() && $errors === [], $errors, $fixed, false);
+    }
+
+    /**
+     * --wpml opt-in: the package schemas treat WPML/ACFML translation keys as
+     * optional (ACF-faithful). This enforces their PRESENCE on field groups for
+     * multilingual projects that require them. Values stay schema-governed.
+     *
+     * @return array<string, string> JSON-pointer => message
+     */
+    public function wpmlPresenceFindings(object $json): array {
+        $out = [];
+        if (!isset($json->acfml_field_group_mode)) {
+            $out['/acfml_field_group_mode'] = 'required by --wpml: field-group translation mode is missing';
+        }
+        $fields = $json->fields ?? null;
+        if (is_array($fields)) {
+            $this->walkFieldsWpml($fields, '/fields', $out);
+        }
+        return $out;
+    }
+
+    /**
+     * Recurse fields + nested sub_fields (repeater/group) + flexible-content
+     * layouts, flagging any field object missing `wpml_cf_preferences`.
+     *
+     * @param array<int|string, mixed> $fields
+     * @param array<string, string>    $out
+     */
+    private function walkFieldsWpml(array $fields, string $base, array &$out): void {
+        // Pure-presentational field types hold no translatable value, so ACF
+        // never attaches a translation preference to them — don't require one.
+        $valueless = ['tab', 'message', 'accordion'];
+
+        foreach ($fields as $i => $field) {
+            if (!$field instanceof \stdClass) {
+                continue;
+            }
+            $ptr = $base . '/' . $i;
+            $type = is_string($field->type ?? null) ? $field->type : '';
+            if (!in_array($type, $valueless, true) && !isset($field->wpml_cf_preferences)) {
+                $out[$ptr . '/wpml_cf_preferences'] = 'required by --wpml: missing on field';
+            }
+            if (isset($field->sub_fields) && is_array($field->sub_fields)) {
+                $this->walkFieldsWpml($field->sub_fields, $ptr . '/sub_fields', $out);
+            }
+            $layouts = $field->layouts ?? null;
+            if ($layouts instanceof \stdClass) {
+                $layouts = (array) $layouts;
+            }
+            if (is_array($layouts)) {
+                foreach ($layouts as $lk => $layout) {
+                    if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
+                        $this->walkFieldsWpml($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $out);
+                    }
+                }
+            }
+        }
     }
 
     /**
