@@ -1,7 +1,7 @@
 # README Version Provenance + WPML-Optional Keys — Design
 
 **Date:** 2026-05-29
-**Status:** Approved (design), pending implementation
+**Status:** Implemented
 **Package:** `parisek/acf-json-schema`
 
 ## Goal

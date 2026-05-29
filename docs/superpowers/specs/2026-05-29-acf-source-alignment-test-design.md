@@ -72,7 +72,7 @@ For each field type:
 1. `$defaults = acf_get_field_types()[<type>]->defaults`.
 2. Drop ACF-internal keys (those beginning with `_`, e.g. `_name`, `_valid`) — they are never serialised to field JSON.
 3. Build `field = array_merge( base_required_stub, $defaults )` where `base_required_stub = { key: 'field_x', label: 'x', name: 'x', type: <type>, allow_in_bindings: 0 }` (only filling base-required keys the defaults don't already provide).
-4. Validate `{ …minimal group…, fields: [ field ] }` against `acf.schema.json`. The group wrapper must itself satisfy `acf.schema.json`'s root `required` (`key`, `title`, `fields`, `location`, `modified`, `active`, `acfml_field_group_mode`) with known-valid values, so the **only** thing under test is the synthetic field — a wrapper-level error would be a test bug, not a finding.
+4. Validate `{ …minimal group…, fields: [ field ] }` against `acf.schema.json`. The group wrapper must itself satisfy `acf.schema.json`'s root `required` (`key`, `title`, `fields`, `location`, `modified`, `active`) with known-valid values, so the **only** thing under test is the synthetic field — a wrapper-level error would be a test bug, not a finding. (`acfml_field_group_mode` is intentionally NOT in the root `required` — ACF only emits it when ACFML/WPML is active — so the wrapper omits it; include it only if exercising the WPML-active path.)
 5. Assert valid. On failure, the validator's error pointers distinguish a coverage gap (`unevaluatedProperties`) from a type mismatch (a property sub-schema error).
 
 ### Check 3 — Stale constraint

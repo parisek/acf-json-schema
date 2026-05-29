@@ -5,10 +5,10 @@
     "type": "object",
     "properties": {
         "default_value": { "type": ["string", "null"] },
-        "enable_opacity": { "type": ["boolean", "integer"] },
+        "enable_opacity": { "enum": [true, false, 0, 1] },
         "return_format": { "enum": ["string", "array"] },
         "custom_palette_source": { "type": ["string", "null"] },
         "palette_colors": { "type": ["string", "array", "null"] },
-        "show_color_wheel": { "type": ["boolean", "integer"] }
+        "show_color_wheel": { "enum": [true, false, 0, 1] }
     }
 }

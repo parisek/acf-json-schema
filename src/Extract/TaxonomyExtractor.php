@@ -31,7 +31,11 @@ final class TaxonomyExtractor {
      * @return array<string, mixed>
      */
     private function buildProperties(): array {
-        $boolFlag = ['type' => ['boolean', 'integer']];
+        // ACF writes these WordPress boolean args to JSON as integers (0/1), but
+        // the boolean form stays valid for files authored via the API/WP-CLI.
+        // Constrain to exactly those forms rather than the broad `integer` type,
+        // so malformed values like 2 or -1 are still rejected.
+        $boolFlag = ['enum' => [true, false, 0, 1]];
         return [
             'key' => ['type' => 'string', 'pattern' => '^taxonomy_'],
             'title' => ['type' => 'string', 'minLength' => 1],
@@ -51,7 +55,7 @@ final class TaxonomyExtractor {
             'show_tagcloud' => $boolFlag,
             'show_in_quick_edit' => $boolFlag,
             'rewrite' => ['$ref' => 'refs/permalink-rewrite.schema.json'],
-            'single_value' => ['type' => ['boolean', 'integer', 'null']],
+            'single_value' => ['enum' => [true, false, 0, 1, null]],
             'modified' => ['type' => 'integer'],
         ];
     }
