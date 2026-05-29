@@ -70,6 +70,20 @@ ACF added a type (e.g. `icon_picker` in 6.8). Required edits — all four, plus 
 - **CHANGELOG.md**: behavior-affecting PRs add an entry under a new `## [x.y.z] — YYYY-MM-DD` heading, [Keep a Changelog](https://keepachangelog.com/) categories.
 - Release is **manual** — see `RELEASING.md` (verify schemas against live WP → `composer check` → CHANGELOG → tag `vX.Y.Z` → Packagist). No release automation workflow.
 
+### Review-thread resolution
+
+After pushing a fix that addresses an inline review comment (Copilot or human), **resolve the corresponding thread programmatically — don't ask first**. REST has no equivalent; use GraphQL:
+
+```bash
+# 1) list threads → node IDs of unresolved ones
+gh api graphql -f query='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){reviewThreads(first:50){nodes{id isResolved comments(first:1){nodes{path body}}}}}}}' -F o=parisek -F r=acf-json-schema -F n=<N>
+# 2) resolve one
+gh api graphql -f query='mutation($id:ID!){resolveReviewThread(input:{threadId:$id}){thread{isResolved}}}' -F id="<PRRT_…>"
+```
+
+- Resolve **only** threads the latest commit actually addresses. If the fix is a polite disagreement / documented false positive, reply and **leave it open** for the reviewer to close.
+- Re-requesting Copilot review via REST is unreliable (the POST succeeds but triggers no new run). Ask the human to click *Re-request review* in the UI.
+
 ## Style
 
 - 4-space indentation in PHP (this repo's baseline — note: not tabs). 4-space in the JSON schemas.
