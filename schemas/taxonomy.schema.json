@@ -3,27 +3,116 @@
     "$id": "https://schemas.parisek.dev/acf/taxonomy.schema.json",
     "title": "ACF Taxonomy",
     "type": "object",
-    "required": ["key", "title", "taxonomy", "object_type", "active"],
+    "required": [
+        "key",
+        "title",
+        "taxonomy",
+        "object_type",
+        "active"
+    ],
     "properties": {
-        "key": { "type": "string", "pattern": "^taxonomy_" },
-        "title": { "type": "string", "minLength": 1 },
-        "taxonomy": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
-        "active": { "type": "boolean" },
-        "advanced_configuration": { "type": "boolean" },
-        "object_type": { "type": "array", "items": { "type": "string" } },
-        "labels": { "type": "object" },
-        "public": { "type": "boolean" },
-        "publicly_queryable": { "type": "boolean" },
-        "hierarchical": { "type": "boolean" },
-        "show_ui": { "type": "boolean" },
-        "show_in_menu": { "type": "boolean" },
-        "show_in_nav_menus": { "type": "boolean" },
-        "show_in_rest": { "type": "boolean" },
-        "show_admin_column": { "type": "boolean" },
-        "show_tagcloud": { "type": "boolean" },
-        "show_in_quick_edit": { "type": "boolean" },
-        "rewrite": { "$ref": "refs/permalink-rewrite.schema.json" },
-        "single_value": { "type": "boolean" },
-        "modified": { "type": "integer" }
+        "key": {
+            "type": "string",
+            "pattern": "^taxonomy_"
+        },
+        "title": {
+            "type": "string",
+            "minLength": 1
+        },
+        "taxonomy": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "active": {
+            "type": "boolean"
+        },
+        "advanced_configuration": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "object_type": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "labels": {
+            "type": "object"
+        },
+        "public": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "publicly_queryable": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "hierarchical": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "show_ui": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "show_in_menu": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "show_in_nav_menus": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "show_in_rest": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "show_admin_column": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "show_tagcloud": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "show_in_quick_edit": {
+            "type": [
+                "boolean",
+                "integer"
+            ]
+        },
+        "rewrite": {
+            "$ref": "refs/permalink-rewrite.schema.json"
+        },
+        "single_value": {
+            "type": [
+                "boolean",
+                "integer",
+                "null"
+            ]
+        },
+        "modified": {
+            "type": "integer"
+        }
     }
 }

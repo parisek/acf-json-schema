@@ -28,6 +28,16 @@
             "type": "string",
             "pattern": "^https://",
             "description": "HTTPS URL to an external icon — discouraged (latency, CSP, no theming). Allowed for backward compatibility with legacy projects."
+        },
+        {
+            "type": "object",
+            "description": "ACF Pro 6.x icon-picker object. `type` selects the source; `value` is a dashicon class, an attachment ID (media_library), or a URL. ACF's post-type class reads both the string and object forms.",
+            "required": ["type", "value"],
+            "properties": {
+                "type": { "enum": ["dashicons", "media_library", "url"] },
+                "value": { "type": ["string", "integer"] }
+            },
+            "additionalProperties": false
         }
     ]
 }

@@ -1,0 +1,5 @@
+{
+    "description": "An image field must satisfy field-image.schema.json, which requires `return_format`. Guards the acf.schema.json discriminator against an allOf→anyOf regression that would silently disable per-type validation.",
+    "schema": "https://schemas.parisek.dev/acf/acf.schema.json",
+    "min_violations": 1
+}

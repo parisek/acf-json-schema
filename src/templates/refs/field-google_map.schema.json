@@ -2,5 +2,11 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-google_map.schema.json",
     "title": "ACF Field — Google Map",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "center_lat": { "type": ["number", "string"], "description": "Initial map centre latitude; ACF stores it as a string." },
+        "center_lng": { "type": ["number", "string"] },
+        "zoom": { "type": ["integer", "string"] },
+        "height": { "type": ["integer", "string"] }
+    }
 }

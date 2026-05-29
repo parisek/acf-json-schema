@@ -45,10 +45,27 @@ final class Generator {
     }
 
     private function bootstrapWordPress(): void {
-        ob_start();
         if (!defined('ABSPATH')) {
             define('WP_USE_THEMES', false);
         }
+
+        // WP prints notices/deprecations during load; buffer them so they don't
+        // corrupt our output. But a fatal inside wp-load.php (DB down, corrupt
+        // install) would otherwise be silently discarded by ob_end_clean(),
+        // leaving the operator with no diagnostic. Register a shutdown guard that
+        // forwards the buffered output to stderr only when the process is dying
+        // on a fatal — on the normal path the buffer is already cleaned (level 0)
+        // and error_get_last() is not a fatal, so nothing is emitted.
+        ob_start();
+        register_shutdown_function(static function (): void {
+            $buffer = ob_get_level() > 0 ? (string) ob_get_clean() : '';
+            $err = error_get_last();
+            $fatal = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
+            if ($err !== null && in_array($err['type'], $fatal, true)) {
+                fwrite(STDERR, "WordPress bootstrap failed:\n{$buffer}\n");
+            }
+        });
+
         require_once "{$this->wpRoot}/wp-load.php";
         ob_end_clean();
     }

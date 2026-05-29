@@ -2,5 +2,12 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-group.schema.json",
     "title": "ACF Field — Group",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "layout": { "enum": ["block", "table", "row"] },
+        "sub_fields": {
+            "type": "array",
+            "description": "Nested field definitions. v0.1.0 validates only that this is an array; per-item field validation is a future enhancement."
+        }
+    }
 }

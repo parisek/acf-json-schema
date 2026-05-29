@@ -1,12 +1,20 @@
 # parisek/acf-json-schema
 
+[![Packagist Version](https://img.shields.io/packagist/v/parisek/acf-json-schema.svg)](https://packagist.org/packages/parisek/acf-json-schema)
+[![PHP Version](https://img.shields.io/packagist/php-v/parisek/acf-json-schema.svg)](https://packagist.org/packages/parisek/acf-json-schema)
+[![ACF Pro](https://img.shields.io/badge/ACF_Pro-6.8.x-blue.svg)](https://www.advancedcustomfields.com/pro/)
+[![Tests](https://github.com/parisek/acf-json-schema/actions/workflows/test.yml/badge.svg)](https://github.com/parisek/acf-json-schema/actions/workflows/test.yml)
+[![License](https://img.shields.io/packagist/l/parisek/acf-json-schema.svg)](LICENSE)
+
 JSON Schema bundle for [Advanced Custom Fields](https://www.advancedcustomfields.com/) JSON exports — field groups (`acf.json`), Custom Post Types (`<cpt>.json`), Taxonomies (`<tax>.json`), and ACF Blocks (`block.json`).
 
 **Target:** ACF Pro 6.8.x. Free edition partially supported (field-group + field-type schemas only).
 
+**Generated against:** ACF Pro 6.8.2 · WPML 4.9.4 · ACFML 2.2.4 — the live install the canonical schemas were curated and snapshot-tested against.
+
 ## What this is
 
-Comprehensive JSON Schema (draft 2020-12) coverage for every JSON file the ACF Pro Admin Sync UI emits. Schemas are hand-curated against a live WP+ACF Pro install — the generator (`bin/acf-schema-gen`) reproduces the canonical baseline, and a snapshot test asserts byte-equality on every CI run.
+Comprehensive JSON Schema (draft 2020-12) coverage for every JSON file the ACF Pro Admin Sync UI emits. Schemas are hand-curated against a live WP + ACF Pro + WPML install — the generator (`bin/acf-schema-gen`) reproduces the canonical baseline, and a snapshot test asserts byte-equality on every CI run. WPML/ACFML keys (e.g. `acfml_field_group_mode`, `wpml_cf_preferences`) are optional, so plain ACF (non-WPML) exports validate too.
 
 Use case: lint your project's ACF JSON files in CI. Catch typos, type drift, and shape regressions before they ship to production.
 

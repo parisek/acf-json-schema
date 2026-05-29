@@ -2,5 +2,11 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-true_false.schema.json",
     "title": "ACF Field — True/False",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "message": { "type": "string", "description": "Text shown next to the checkbox/toggle." },
+        "ui": { "enum": [0, 1], "description": "Render as a stylised toggle switch." },
+        "ui_on_text": { "type": "string" },
+        "ui_off_text": { "type": "string" }
+    }
 }

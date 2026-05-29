@@ -20,8 +20,22 @@ final class BlockExtractor {
                 'description' => ['type' => ['string', 'null']],
                 'category' => ['type' => 'string'],
                 'icon' => [
+                    // block.json `icon` is more permissive than CPT `menu_icon`:
+                    // Gutenberg accepts a BARE Dashicon slug (e.g. "star-filled")
+                    // and prepends "dashicons-" itself. The shared icon ref only
+                    // allows the full "dashicons-…" class (correct for menu_icon),
+                    // so widen here with anyOf rather than loosening the ref.
                     'allOf' => [
-                        ['$ref' => 'refs/icon.schema.json'],
+                        [
+                            'anyOf' => [
+                                ['$ref' => 'refs/icon.schema.json'],
+                                [
+                                    'type' => 'string',
+                                    'pattern' => '^[a-z][a-z0-9-]+$',
+                                    'description' => "Bare Dashicon slug (e.g. 'star-filled'); Gutenberg prepends 'dashicons-'.",
+                                ],
+                            ],
+                        ],
                         [
                             'if' => ['type' => 'string', 'pattern' => '^<svg'],
                             'then' => ['pattern' => 'currentColor'],

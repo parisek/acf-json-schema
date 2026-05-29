@@ -2,5 +2,17 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-taxonomy.schema.json",
     "title": "ACF Field — Taxonomy",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "taxonomy": { "type": "string", "description": "Taxonomy slug the field draws terms from (e.g. 'category')." },
+        "field_type": { "enum": ["checkbox", "multi_select", "radio", "select"], "description": "Admin UI control used to pick terms." },
+        "add_term": { "enum": [0, 1] },
+        "save_terms": { "enum": [0, 1] },
+        "load_terms": { "enum": [0, 1] },
+        "return_format": { "enum": ["object", "id"] },
+        "multiple": { "enum": [0, 1] },
+        "allow_null": { "enum": [0, 1] },
+        "bidirectional": { "enum": [0, 1] },
+        "bidirectional_target": { "type": "array" }
+    }
 }
