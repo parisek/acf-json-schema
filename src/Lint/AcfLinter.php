@@ -99,6 +99,46 @@ final class AcfLinter {
         return new FileLintResult($path, $kind, $result->isValid(), $errors, $fixed, false);
     }
 
+    /**
+     * Recursively collect *.json paths from the given files/dirs, ignoring
+     * vendor/ and node_modules/. Mirrors lint.mjs glob behaviour.
+     *
+     * @param array<int, string> $paths
+     * @return array<int, string> sorted absolute paths
+     */
+    public function collectJsonFiles(array $paths): array {
+        $out = [];
+        foreach ($paths as $p) {
+            if (is_file($p)) {
+                if (str_ends_with($p, '.json')) {
+                    $out[] = $p;
+                }
+                continue;
+            }
+            if (!is_dir($p)) {
+                continue;
+            }
+            $it = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($p, \FilesystemIterator::SKIP_DOTS),
+            );
+            foreach ($it as $file) {
+                if (!$file instanceof \SplFileInfo) {
+                    continue;
+                }
+                $abs = $file->getPathname();
+                if (!str_ends_with($abs, '.json')) {
+                    continue;
+                }
+                if (str_contains($abs, '/vendor/') || str_contains($abs, '/node_modules/')) {
+                    continue;
+                }
+                $out[] = $abs;
+            }
+        }
+        sort($out);
+        return $out;
+    }
+
     /** Mirrors lint.mjs `needsModifiedBump()`. */
     public function needsModifiedBump(object $json): bool {
         if (!isset($json->fields) && !isset($json->post_type) && !isset($json->taxonomy)) {

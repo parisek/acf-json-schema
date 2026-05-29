@@ -101,4 +101,28 @@ final class AcfLinterTest extends TestCase {
             @rmdir($dir);
         }
     }
+
+    public function test_collect_json_files_walks_dirs_and_ignores_vendor(): void {
+        $root = __DIR__ . '/../fixtures/valid/fellows';
+        $files = $this->linter->collectJsonFiles([$root]);
+        self::assertNotEmpty($files);
+        foreach ($files as $f) {
+            self::assertStringEndsWith('.json', $f);
+            self::assertStringNotContainsString('/vendor/', $f);
+            self::assertStringNotContainsString('/node_modules/', $f);
+        }
+    }
+
+    public function test_whole_valid_corpus_lints_clean(): void {
+        $root = __DIR__ . '/../fixtures/valid';
+        $files = $this->linter->collectJsonFiles([$root]);
+        $failures = [];
+        foreach ($files as $f) {
+            $r = $this->linter->lintFile($f, false);
+            if (!$r->skipped && !$r->valid) {
+                $failures[] = $r->path . ' → ' . json_encode($r->errors);
+            }
+        }
+        self::assertSame([], $failures, "Valid corpus must lint clean:\n" . implode("\n", $failures));
+    }
 }
