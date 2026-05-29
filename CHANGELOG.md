@@ -5,6 +5,24 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — 2026-05-29
+
+### Added
+
+- README **Generated against** provenance line: ACF Pro 6.8.2 · WPML 4.9.4 · ACFML 2.2.4 (the live install the schemas were curated against).
+- `CLAUDE.md` + `AGENTS.md` — operational notes for AI coding agents (schema source-of-truth rules, add-a-field-type checklist, regeneration, conventions).
+
+### Changed
+
+- WPML/ACFML field-group keys are now **required only when present**: `acfml_field_group_mode` dropped from `acf.schema.json`'s root `required` (its value is still constrained to `"advanced"` when present), so plain ACF (non-WPML) exports validate too. `wpml_cf_preferences` was already optional.
+- Tightened "boolean-ish" flags from the broad `integer` type to `enum: [true, false, 0, 1]` — taxonomy bool flags + `single_value`, and color_picker `enable_opacity`/`show_color_wheel` — so malformed values like `2`/`-1` are rejected.
+
+### Fixed
+
+- `icon_picker` (ACF 6.8) added to the base `refs/field.schema.json` `type` enum; its discriminator branch was unreachable, so real `icon_picker` fields were wrongly rejected by the base `$ref`.
+- `Generator` bootstrap shutdown guard scoped with a `$bootstrapComplete` flag so a post-bootstrap fatal is no longer mislabelled as a "WordPress bootstrap failed" diagnostic.
+- Renamed `tests/helpers` → `tests/Helpers` to match the PSR-4 namespace; case-sensitive Linux CI was failing to autoload the test `Validator` helper.
+
 ## [0.1.0] — 2026-05-28
 
 ### Added
