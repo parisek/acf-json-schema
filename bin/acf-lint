@@ -20,6 +20,7 @@ use Parisek\AcfJsonSchema\Lint\AcfLinter;
 $args = array_slice($argv, 1);
 $strict = in_array('--strict', $args, true);
 $fix = in_array('--fix', $args, true);
+$wpml = in_array('--wpml', $args, true);
 $paths = array_values(array_filter($args, static fn (string $a): bool => !str_starts_with($a, '-')));
 
 if (in_array('--help', $args, true) || $paths === []) {
@@ -32,6 +33,9 @@ if (in_array('--help', $args, true) || $paths === []) {
       <path>     File or directory (directories are walked recursively for *.json)
       --strict   Exit 1 if any file has findings (CI gate)
       --fix      Auto-bump stale/missing `modified` timestamps
+      --wpml     Require WPML/ACFML translation keys to be PRESENT on field
+                 groups (acfml_field_group_mode) and every field
+                 (wpml_cf_preferences). Opt-in; schemas keep them optional.
 
     Exit codes: 0 ok (or findings without --strict), 1 findings under --strict / bad args.
 
@@ -49,7 +53,7 @@ $fixedFiles = 0;
 $totalErrors = 0;
 
 foreach ($files as $file) {
-    $r = $linter->lintFile($file, $fix);
+    $r = $linter->lintFile($file, $fix, $wpml);
     if ($r->fixed) {
         $fixedFiles++;
     }

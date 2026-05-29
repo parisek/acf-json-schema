@@ -5,6 +5,12 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-05-29
+
+### Added
+
+- `acf-lint --wpml` — opt-in flag that requires WPML/ACFML translation keys to be **present**: `acfml_field_group_mode` on each field group and `wpml_cf_preferences` on every value-holding field (recurses into repeater/group/flexible-content sub-fields; `tab`/`message`/`accordion` are exempt as they hold no translatable value). The bundled schemas keep these keys optional (ACF-faithful); `--wpml` lets multilingual projects enforce their house rule without forking the schemas.
+
 ## [0.3.0] — 2026-05-29
 
 ### Added
