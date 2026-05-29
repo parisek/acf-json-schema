@@ -49,6 +49,15 @@ Load `acf.schema.json`, `block.schema.json`, `cpt.schema.json`, or `taxonomy.sch
 
 (`_meta.json` carries generator provenance — ACF version, timestamp — and is intentionally not part of the canonical schemas.)
 
+## Linting your project's ACF JSON (PHP)
+
+```bash
+composer require --dev parisek/acf-json-schema
+vendor/bin/acf-lint --strict path/to/templates path/to/blocks
+```
+
+`acf-lint` walks the given files/dirs, dispatches each JSON to the right bundled schema (block / acf / cpt / taxonomy), and reports findings. `--fix` bumps stale `modified` timestamps; `--strict` exits non-zero on any finding (CI gate). Files of an unrecognized shape are skipped.
+
 ## For maintainers
 
 Regenerate / verify schemas against a live WP+ACF Pro install:

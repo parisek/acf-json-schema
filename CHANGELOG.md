@@ -5,6 +5,18 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-05-29
+
+### Added
+
+- `bin/acf-lint` — PHP CLI that validates ACF / CPT / taxonomy / block JSON against the bundled schemas (`--strict` CI gate, `--fix` for stale `modified` timestamps). Lets consumers lint via Composer/PHP without a Node/ajv toolchain.
+- `src/Lint/AcfLinter` + `FileLintResult` — reusable validation core (schema dispatch, file collection, opis-backed validation).
+- `.gitattributes` `export-ignore` so dev-only files (tests, docs, CI config, agent notes) are excluded from the Composer dist.
+
+### Changed
+
+- `opis/json-schema` promoted from `require-dev` to `require` (runtime dependency for `acf-lint`).
+
 ## [0.2.0] — 2026-05-29
 
 ### Added
