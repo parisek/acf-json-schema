@@ -52,10 +52,6 @@ diff -r /tmp/acf-schemas-out/ vendor/parisek/acf-json-schema/schemas/
 
 See [`RELEASING.md`](RELEASING.md) for the full release flow.
 
-## Design spec
-
-[wordpress-base/docs/superpowers/specs/2026-05-28-acf-json-schema-package-design.md](https://github.com/portadesign/wordpress-base/blob/main/docs/superpowers/specs/2026-05-28-acf-json-schema-package-design.md)
-
 ## License
 
 GPL-3.0-or-later
