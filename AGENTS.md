@@ -84,6 +84,15 @@ gh api graphql -f query='mutation($id:ID!){resolveReviewThread(input:{threadId:$
 - Resolve **only** threads the latest commit actually addresses. If the fix is a polite disagreement / documented false positive, reply and **leave it open** for the reviewer to close.
 - Re-requesting Copilot review via REST is unreliable (the POST succeeds but triggers no new run). Ask the human to click *Re-request review* in the UI.
 
+## Architecture decisions (ADRs)
+
+Significant decisions are recorded in `docs/adr/` (the only tracked subtree under git-ignored `docs/`). See `docs/adr/README.md` for the template.
+
+- **Offer one sparingly** — only when all three hold: (1) hard to reverse, (2) surprising without context, (3) the result of a real trade-off. Most changes are none of these — no ADR.
+- **Propose, get a yes, then write.** Don't auto-create ADRs.
+- One file per decision: `NNNN-kebab-title.md`, sequential, numbers permanent (never renumber/reuse). Format: `## Context` / `## Decision` / `## Consequences`.
+- To reverse a past decision, write a new ADR linking back — don't edit the old one.
+
 ## Style
 
 - 4-space indentation in PHP (this repo's baseline — note: not tabs). 4-space in the JSON schemas.
