@@ -1,25 +1,32 @@
 {
     "name": "parisek/acf-json-schema",
     "description": "JSON Schema bundle for Advanced Custom Fields JSON exports (field groups, CPT, taxonomy, blocks). Targets ACF Pro 6.8.x.",
-    "type": "library",
     "license": "GPL-3.0-or-later",
-    "keywords": ["acf", "advanced custom fields", "wordpress", "json-schema", "lint"],
-    "homepage": "https://github.com/parisek/acf-json-schema",
+    "type": "library",
+    "keywords": [
+        "acf",
+        "advanced custom fields",
+        "wordpress",
+        "json-schema",
+        "lint"
+    ],
     "authors": [
         {
             "name": "Petr Parimucha",
             "email": "petr.parimucha@portadesign.cz"
         }
     ],
+    "homepage": "https://github.com/parisek/acf-json-schema",
     "require": {
         "php": "^8.3",
         "nikic/php-parser": "^5.0",
         "opis/json-schema": "^2.3"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.0 || ^12.0",
+        "ergebnis/composer-normalize": "^2.0",
+        "php-stubs/acf-pro-stubs": "^6.5",
         "phpstan/phpstan": "^2.1",
-        "php-stubs/acf-pro-stubs": "^6.5"
+        "phpunit/phpunit": "^11.0 || ^12.0"
     },
     "autoload": {
         "psr-4": {
@@ -31,14 +38,25 @@
             "Parisek\\AcfJsonSchema\\Tests\\": "tests/"
         }
     },
-    "bin": ["bin/acf-schema-gen", "bin/acf-lint"],
-    "scripts": {
-        "test":     "vendor/bin/phpunit",
-        "phpstan":  "vendor/bin/phpstan analyse --memory-limit=512M",
-        "check":    ["@test", "@phpstan"]
+    "bin": [
+        "bin/acf-lint",
+        "bin/acf-schema-gen"
+    ],
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        }
     },
     "extra": {
-        "acf-target-version": "6.8.x",
-        "acf-target-edition": "Pro"
+        "acf-target-edition": "Pro",
+        "acf-target-version": "6.8.x"
+    },
+    "scripts": {
+        "check": [
+            "@test",
+            "@phpstan"
+        ],
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=512M",
+        "test": "vendor/bin/phpunit"
     }
 }
