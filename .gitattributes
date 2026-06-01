@@ -11,3 +11,4 @@
 /RELEASING.md    export-ignore
 /composer.lock   export-ignore
 CHANGELOG.md     export-ignore
+/.editorconfig export-ignore
