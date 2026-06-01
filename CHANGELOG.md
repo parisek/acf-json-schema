@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-06-01
+
 ### Changed
 
 - Adopted the shared parisek QA tooling: `composer validate --strict` + `composer audit` + `composer normalize` CI gates (`ergebnis/composer-normalize` added to dev). No code-style formatter — this package's same-line-brace style isn't PER-CS, which would reformat it wholesale. Dev-only; no consumer impact.
