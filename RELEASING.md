@@ -27,34 +27,19 @@ All tests must pass (1 skip for `SnapshotTest` is expected without `ACF_SCHEMA_T
 
 PHPStan must report `[OK] No errors`.
 
-### 3. Update CHANGELOG.md
+### 3. Make sure changes sit under `[Unreleased]`
 
-Add a new `## [x.y.z] — YYYY-MM-DD` heading above the previous release. Follow the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format — `### Added`, `### Changed`, `### Fixed`, `### Removed`.
+Behaviour-affecting changes belong under `## [Unreleased]` in `CHANGELOG.md` (Keep a Changelog: `### Added`, `### Changed`, `### Fixed`, `### Removed`) — normally added by their own PR. **Don't hand-stamp a version heading** — the workflow does that.
 
-### 4. Commit
+### 4. Trigger the Stamp Release workflow
 
-```bash
-git add CHANGELOG.md  # plus any schema/src changes
-git commit -m "chore(release): vX.Y.Z"
-```
+Actions tab → **Stamp Release** → Run workflow → enter `X.Y.Z` (no `v` prefix).
 
-### 5. Tag
+It validates the version, requires a non-empty `[Unreleased]`, runs `composer test` + `composer phpstan` as guards, stamps `[Unreleased]` → `[X.Y.Z] - DATE`, commits `Release X.Y.Z`, tags `vX.Y.Z`, pushes, and dispatches `release.yml` — which builds the GitHub Release from the tag's CHANGELOG section + merged PRs.
 
-```bash
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-```
+> Schema verification (step 1) is the one thing CI can't run (no live WP env), so keep doing it locally before you trigger the release.
 
-### 6. Push
-
-```bash
-git push origin main --follow-tags
-```
-
-### 7. GitHub release
-
-Create a GitHub release from the tag. Paste the relevant CHANGELOG section as the release body.
-
-### 8. Packagist
+### 5. Packagist
 
 Packagist auto-updates via the GitHub webhook. Verify the new version appears at `https://packagist.org/packages/parisek/acf-json-schema` within a few minutes.
 

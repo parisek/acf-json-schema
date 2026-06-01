@@ -9,3 +9,5 @@
 /CLAUDE.md       export-ignore
 /AGENTS.md       export-ignore
 /RELEASING.md    export-ignore
+/composer.lock   export-ignore
+CHANGELOG.md     export-ignore
