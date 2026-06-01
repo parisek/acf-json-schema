@@ -5,13 +5,15 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.0] — 2026-05-29
+## [Unreleased]
+
+## [0.4.0] - 2026-05-29
 
 ### Added
 
 - `acf-lint --wpml` — opt-in flag that requires WPML/ACFML translation keys to be **present**: `acfml_field_group_mode` on each field group and `wpml_cf_preferences` on every value-holding field (recurses into repeater/group/flexible-content sub-fields; `tab`/`message`/`accordion` are exempt as they hold no translatable value). The bundled schemas keep these keys optional (ACF-faithful); `--wpml` lets multilingual projects enforce their house rule without forking the schemas.
 
-## [0.3.0] — 2026-05-29
+## [0.3.0] - 2026-05-29
 
 ### Added
 
@@ -23,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `opis/json-schema` promoted from `require-dev` to `require` (runtime dependency for `acf-lint`).
 
-## [0.2.0] — 2026-05-29
+## [0.2.0] - 2026-05-29
 
 ### Added
 
@@ -41,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Generator` bootstrap shutdown guard scoped with a `$bootstrapComplete` flag so a post-bootstrap fatal is no longer mislabelled as a "WordPress bootstrap failed" diagnostic.
 - Renamed `tests/helpers` → `tests/Helpers` to match the PSR-4 namespace; case-sensitive Linux CI was failing to autoload the test `Validator` helper.
 
-## [0.1.0] — 2026-05-28
+## [0.1.0] - 2026-05-28
 
 ### Added
 

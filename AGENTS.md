@@ -67,8 +67,8 @@ ACF added a type (e.g. `icon_picker` in 6.8). Required edits — all four, plus 
 
 ## Per-PR / release
 
-- **CHANGELOG.md**: behavior-affecting PRs add an entry under a new `## [x.y.z] — YYYY-MM-DD` heading, [Keep a Changelog](https://keepachangelog.com/) categories.
-- Release is **manual** — see `RELEASING.md` (verify schemas against live WP → `composer check` → CHANGELOG → tag `vX.Y.Z` → Packagist). No release automation workflow.
+- **CHANGELOG.md**: behavior-affecting PRs add an entry under `## [Unreleased]`, [Keep a Changelog](https://keepachangelog.com/) categories. Don't hand-stamp version headings — the release workflow does that.
+- Release is **automated** via the **Stamp Release** + `release.yml` workflows (mirrors `parisek/timber-kit`) — see `RELEASING.md`. The one manual pre-flight CI can't do is verifying schemas against a live WP install.
 
 ### Review-thread resolution
 
