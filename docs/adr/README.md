@@ -55,3 +55,4 @@ guard (test, CI check, convention) that keeps it from drifting, if any.
 - [0002](0002-refs-byte-identical-dual-copy.md) — Keep `src/templates/refs/` and `schemas/refs/` as byte-identical copies
 - [0003](0003-wpml-keys-optional.md) — WPML/ACFML keys are optional, not required
 - [0004](0004-boolean-ish-enums-not-normalised.md) — Model ACF's serialised boolean forms instead of normalising them
+- [0005](0005-unify-field-validation-shared-field-item.md) — Unify field validation across nesting via a generated shared field-item schema
