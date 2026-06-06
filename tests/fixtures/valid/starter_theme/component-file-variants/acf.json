@@ -1,0 +1,56 @@
+{
+    "key": "group_file-variants",
+    "title": "File return-format variants",
+    "fields": [
+        {
+            "key": "field_file-variants_doc_url",
+            "label": "Document URL",
+            "name": "doc_url",
+            "aria-label": "",
+            "type": "file",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "return_format": "url",
+            "library": "uploadedTo",
+            "min_size": 0,
+            "max_size": 5,
+            "mime_types": "",
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_file-variants_doc_id",
+            "label": "Document ID",
+            "name": "doc_id",
+            "aria-label": "",
+            "type": "file",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "return_format": "id",
+            "library": "all",
+            "allow_in_bindings": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/file-variants"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1756303996
+}
