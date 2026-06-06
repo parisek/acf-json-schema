@@ -1,0 +1,444 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.parisek.dev/acf/field-item.schema.json",
+    "title": "ACF Field (any type)",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "refs/field.schema.json"
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "text"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-text.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "textarea"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-textarea.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "wysiwyg"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-wysiwyg.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "number"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-number.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "range"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-range.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "email"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-email.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "url"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-url.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "password"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-password.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "image"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-image.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "gallery"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-gallery.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "file"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-file.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "link"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-link.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "post_object"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-post_object.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "page_link"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-page_link.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "relationship"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-relationship.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "taxonomy"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-taxonomy.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "user"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-user.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "select"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-select.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "checkbox"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-checkbox.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "radio"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-radio.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "true_false"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-true_false.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "button_group"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-button_group.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "color_picker"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-color_picker.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "icon_picker"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-icon_picker.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "date_picker"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-date_picker.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "time_picker"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-time_picker.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "date_time_picker"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-date_time_picker.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "google_map"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-google_map.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "repeater"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-repeater.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "group"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-group.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "flexible_content"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-flexible_content.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "clone"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-clone.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "tab"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-tab.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "accordion"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-accordion.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "message"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-message.schema.json"
+            }
+        },
+        {
+            "if": {
+                "properties": {
+                    "type": {
+                        "const": "oembed"
+                    }
+                }
+            },
+            "then": {
+                "$ref": "refs/field-oembed.schema.json"
+            }
+        }
+    ],
+    "unevaluatedProperties": false
+}

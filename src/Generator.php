@@ -44,6 +44,7 @@ final class Generator {
         $emitter->copyStaticRefs($this->output);
 
         $this->writeJson("{$this->output}/acf.schema.json", $emitter->emitAcfSchema());
+        $this->writeJson("{$this->output}/field-item.schema.json", $emitter->emitFieldItem());
 
         $fieldCount = count(glob("{$this->output}/refs/field-*.schema.json") ?: []);
         $utilityCount = count(glob("{$this->output}/refs/*.schema.json") ?: []) - $fieldCount;
