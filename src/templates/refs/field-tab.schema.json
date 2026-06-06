@@ -2,5 +2,10 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-tab.schema.json",
     "title": "ACF Field — Tab",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "placement": { "enum": ["top", "left"] },
+        "endpoint": { "enum": [0, 1] },
+        "selected": { "enum": [0, 1] }
+    }
 }

@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-date_time_picker",
+    "title": "Probe Date Time Picker",
+    "fields": [
+        { "key": "field_probe_dtp_d", "label": "When", "name": "when", "type": "date_time_picker", "allow_in_bindings": 0, "display_format": "d/m/Y g:i a", "return_format": "Y-m-d H:i:s", "first_day": 1 }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}

@@ -2,5 +2,12 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-clone.schema.json",
     "title": "ACF Field — Clone",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "clone": { "type": "array" },
+        "display": { "enum": ["seamless", "group"] },
+        "layout": { "enum": ["block", "table", "row"] },
+        "prefix_label": { "enum": [0, 1] },
+        "prefix_name": { "enum": [0, 1] }
+    }
 }

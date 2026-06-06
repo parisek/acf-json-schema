@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-user",
+    "title": "Probe User",
+    "fields": [
+        { "key": "field_probe_user_u", "label": "Author", "name": "author", "type": "user", "allow_in_bindings": 0, "role": "", "allow_null": 0, "multiple": 1, "return_format": "array" }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}

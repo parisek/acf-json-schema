@@ -2,5 +2,16 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-button_group.schema.json",
     "title": "ACF Field — Button Group",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "choices": {
+            "oneOf": [
+                { "type": "array" },
+                { "type": "object" }
+            ]
+        },
+        "allow_null": { "enum": [0, 1] },
+        "layout": { "enum": ["horizontal", "vertical"] },
+        "return_format": { "enum": ["value", "label", "array"] }
+    }
 }

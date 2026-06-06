@@ -1,0 +1,5 @@
+{
+    "description": "button_group layout is constrained to horizontal/vertical; an out-of-enum value must fail.",
+    "schema": "https://schemas.parisek.dev/acf/acf.schema.json",
+    "min_violations": 1
+}
