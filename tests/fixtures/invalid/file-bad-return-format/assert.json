@@ -1,0 +1,5 @@
+{
+    "description": "return_format on a file field is constrained to array/url/id; a value outside that enum must fail (guards against the enum being widened or removed).",
+    "schema": "https://schemas.parisek.dev/acf/acf.schema.json",
+    "min_violations": 1
+}

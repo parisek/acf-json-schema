@@ -1,0 +1,22 @@
+{
+    "key": "group_file-missing-rf",
+    "title": "File missing return_format",
+    "fields": [
+        {
+            "key": "field_file_missing_rf_video",
+            "label": "Video",
+            "name": "video",
+            "type": "file",
+            "library": "all",
+            "mime_types": "mp4,webm",
+            "allow_in_bindings": 0
+        }
+    ],
+    "location": [
+        [
+            { "param": "block", "operator": "==", "value": "acf/file-missing-rf" }
+        ]
+    ],
+    "modified": 1756303996,
+    "active": true
+}

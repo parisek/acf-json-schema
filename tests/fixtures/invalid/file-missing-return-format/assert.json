@@ -1,0 +1,5 @@
+{
+    "description": "ACF always emits return_format on a file field; field-file marks it required, so an export missing it must fail (guards against the required constraint being dropped).",
+    "schema": "https://schemas.parisek.dev/acf/acf.schema.json",
+    "min_violations": 1
+}
