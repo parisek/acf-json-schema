@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Top-level `file` fields no longer fail validation for their standard ACF properties. `refs/field-file.schema.json` was an empty stub, so `return_format`, `library`, `min_size`, `max_size`, and `mime_types` were treated as unevaluated and rejected by `acf.schema.json`'s `unevaluatedProperties: false` (the same field validated fine when nested in `sub_fields`, which doesn't apply that keyword). The stub is now populated with the file field's properties. ([#8](https://github.com/parisek/acf-json-schema/issues/8))
+- Top-level fields of 10 further types no longer reject their valid ACF properties — `oembed`, `user`, `page_link`, `relationship`, `clone`, `tab`, `time_picker`, `date_picker`, `date_time_picker`, `button_group` had empty per-type stubs (same root cause as `file`). Property sets curated from real ACF Pro exports. ([#8](https://github.com/parisek/acf-json-schema/issues/8))
+
+### Changed
+
+- Field validation is now uniform across nesting depth. A new generated `field-item.schema.json` (base schema + per-type discriminator + `unevaluatedProperties: false`) is referenced from `acf.schema.json` `fields[]` and every `sub_fields` / flexible-content `layouts[].sub_fields`. Previously nested fields were validated against the base schema only (and `group` sub-fields not at all), so the same field could pass nested yet fail at the top level. See ADR 0005. ([#8](https://github.com/parisek/acf-json-schema/issues/8))
 
 ## [0.4.1] - 2026-06-01
 
