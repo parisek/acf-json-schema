@@ -2,5 +2,13 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-file.schema.json",
     "title": "ACF Field — File",
-    "type": "object"
+    "type": "object",
+    "required": ["return_format"],
+    "properties": {
+        "return_format": { "enum": ["array", "url", "id"] },
+        "library": { "enum": ["all", "uploadedTo"] },
+        "min_size": { "type": ["integer", "string"] },
+        "max_size": { "type": ["integer", "string"] },
+        "mime_types": { "type": "string" }
+    }
 }
