@@ -48,8 +48,8 @@ final class Generator {
 
         $fieldCount = count(glob("{$this->output}/refs/field-*.schema.json") ?: []);
         $utilityCount = count(glob("{$this->output}/refs/*.schema.json") ?: []) - $fieldCount;
-        echo "Wrote " . (4 + $fieldCount + $utilityCount) . " schemas to {$this->output}/\n";
-        // 4 root (block, cpt, taxonomy, acf) + N field refs (currently 36) + 4 utility refs
+        echo "Wrote " . (5 + $fieldCount + $utilityCount) . " schemas to {$this->output}/\n";
+        // 5 root (block, cpt, taxonomy, acf, field-item) + N field refs (currently 36) + 4 utility refs
     }
 
     private function bootstrapWordPress(): void {

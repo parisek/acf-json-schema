@@ -146,7 +146,9 @@ final class SchemaEmitter {
      *   1. Add field-<type>.schema.json to src/templates/refs/
      *   2. Add field-<type>.schema.json to schemas/refs/ (distribution copy)
      *   3. Add the type slug to SchemaEmitter::FIELD_TYPE_ORDER
-     *   4. Add the anyOf entry to schemas/acf.schema.json
+     *   4. Add the slug to the `type` enum in refs/field.schema.json (template + dist)
+     *   5. Regenerate schemas/acf.schema.json + schemas/field-item.schema.json
+     *      (emitFieldItem() builds the per-type if/then branch from FIELD_TYPE_ORDER)
      *
      * IMPORTANT: any edit to schemas/refs/ files MUST be mirrored back into
      * src/templates/refs/ — the template directory is the source of truth;
