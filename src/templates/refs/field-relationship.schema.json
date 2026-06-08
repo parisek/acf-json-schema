@@ -2,5 +2,17 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-relationship.schema.json",
     "title": "ACF Field — Relationship",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "post_type": { "type": ["array", "string"] },
+        "post_status": { "type": ["array", "string"] },
+        "taxonomy": { "type": ["array", "string"] },
+        "filters": { "type": ["array", "string"] },
+        "elements": { "type": ["array", "string"] },
+        "min": { "type": ["integer", "string"] },
+        "max": { "type": ["integer", "string"] },
+        "return_format": { "enum": ["object", "id"] },
+        "bidirectional": { "enum": [0, 1] },
+        "bidirectional_target": { "type": "array" }
+    }
 }

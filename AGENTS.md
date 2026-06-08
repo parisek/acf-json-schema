@@ -48,7 +48,7 @@ ACF added a type (e.g. `icon_picker` in 6.8). Required edits — all four, plus 
 1. `src/templates/refs/field-<type>.schema.json` (curated constraints)
 2. `schemas/refs/field-<type>.schema.json` (identical distribution copy)
 3. Append the slug to `SchemaEmitter::FIELD_TYPE_ORDER`
-4. Add the `if/then` discriminator branch to `schemas/acf.schema.json`
+4. Regenerate `schemas/field-item.schema.json` **and** `schemas/acf.schema.json` — `emitFieldItem()` builds the `if/then` discriminator branch from `FIELD_TYPE_ORDER`; the per-type branch lives in the generated `field-item` gate now, not hand-written into `acf.schema.json` (ADR 0005). `EmitterConsistencyTest` fails if either committed file is stale.
 5. **Add the slug to the `type` enum in `refs/field.schema.json` (both template + dist).** GOTCHA: every field first validates the base `field.schema.json` via `allOf`; if the slug isn't in that enum, the field is rejected before its per-type branch can apply — the branch is unreachable. (This step is absent from the in-code workflow comment in `copyStaticRefs()`.)
 
 ## Regenerating root schemas

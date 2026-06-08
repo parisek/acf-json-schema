@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-date_picker",
+    "title": "Probe Date Picker",
+    "fields": [
+        { "key": "field_probe_dp_d", "label": "Date", "name": "date", "type": "date_picker", "allow_in_bindings": 0, "display_format": "d/m/Y", "return_format": "d/m/Y", "first_day": 1 }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}

@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-page_link",
+    "title": "Probe Page Link",
+    "fields": [
+        { "key": "field_probe_pl_l", "label": "Link", "name": "link", "type": "page_link", "allow_in_bindings": 0, "post_type": [], "taxonomy": "", "allow_null": 0, "allow_archives": 0, "multiple": 0 }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}

@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-time_picker",
+    "title": "Probe Time Picker",
+    "fields": [
+        { "key": "field_probe_tp_t", "label": "Time", "name": "time", "type": "time_picker", "allow_in_bindings": 0, "display_format": "g:i a", "return_format": "g:i a" }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}

@@ -40,24 +40,6 @@ final class SchemaEmitter {
      * @return array<string, mixed>
      */
     public function emitAcfSchema(): array {
-        // Discriminator: each if/then pair sits directly in the items `allOf`.
-        // For a field whose `type` does not match a branch's `if`, that branch is
-        // vacuously satisfied (if-false ⇒ pass); the single branch whose `if`
-        // matches has its `then` ref ENFORCED. This is the correct JSON Schema
-        // 2020-12 discriminated-union construct.
-        //
-        // Do NOT wrap these in `anyOf`: under `anyOf` the non-matching branches
-        // are vacuously valid, so `anyOf` succeeds regardless of whether the
-        // matching `then` ref holds — silently disabling all per-type validation
-        // (missing required props and base-overlapping constraints slip through).
-        $branches = [];
-        foreach (self::FIELD_TYPE_ORDER as $type) {
-            $branches[] = [
-                'if'   => ['properties' => ['type' => ['const' => $type]]],
-                'then' => ['$ref' => "refs/field-{$type}.schema.json"],
-            ];
-        }
-
         return [
             '$schema' => 'https://json-schema.org/draft/2020-12/schema',
             '$id'     => 'https://schemas.parisek.dev/acf/acf.schema.json',
@@ -73,13 +55,10 @@ final class SchemaEmitter {
                 'title'  => ['type' => 'string', 'minLength' => 1],
                 'fields' => [
                     'type'  => 'array',
-                    'items' => [
-                        'unevaluatedProperties' => false,
-                        'allOf' => array_merge(
-                            [['$ref' => 'refs/field.schema.json']],
-                            $branches,
-                        ),
-                    ],
+                    // Each field validates through the shared field-item gate, so
+                    // a field is checked identically whether it sits here at the
+                    // top level or nested in a sub_fields array (ADR 0005).
+                    'items' => ['$ref' => 'field-item.schema.json'],
                 ],
                 'location' => [
                     'type'  => 'array',
@@ -104,6 +83,49 @@ final class SchemaEmitter {
     }
 
     /**
+     * The shared "any ACF field" gate: the base field schema, the per-type
+     * discriminator, and unevaluatedProperties:false. Referenced from
+     * acf.schema.json `fields[]` AND every nested `sub_fields` position so a
+     * field validates identically regardless of nesting depth (ADR 0005). Lives
+     * in schemas/ root (a generated artifact, like acf.schema.json), not in
+     * schemas/refs/.
+     *
+     * Discriminator: each if/then pair sits directly in `allOf`. For a field
+     * whose `type` does not match a branch's `if`, that branch is vacuously
+     * satisfied (if-false ⇒ pass); the single branch whose `if` matches has its
+     * `then` ref ENFORCED — the correct JSON Schema 2020-12 discriminated-union
+     * construct.
+     *
+     * Do NOT wrap these in `anyOf`: under `anyOf` the non-matching branches are
+     * vacuously valid, so `anyOf` succeeds regardless of whether the matching
+     * `then` ref holds — silently disabling all per-type validation (missing
+     * required props and base-overlapping constraints slip through).
+     *
+     * @return array<string, mixed>
+     */
+    public function emitFieldItem(): array {
+        $branches = [];
+        foreach (self::FIELD_TYPE_ORDER as $type) {
+            $branches[] = [
+                'if'   => ['properties' => ['type' => ['const' => $type]]],
+                'then' => ['$ref' => "refs/field-{$type}.schema.json"],
+            ];
+        }
+
+        return [
+            '$schema' => 'https://json-schema.org/draft/2020-12/schema',
+            '$id'     => 'https://schemas.parisek.dev/acf/field-item.schema.json',
+            'title'   => 'ACF Field (any type)',
+            'type'    => 'object',
+            'allOf'   => array_merge(
+                [['$ref' => 'refs/field.schema.json']],
+                $branches,
+            ),
+            'unevaluatedProperties' => false,
+        ];
+    }
+
+    /**
      * Returns the canonical field type order used in acf.schema.json.
      *
      * @return list<string>
@@ -124,7 +146,9 @@ final class SchemaEmitter {
      *   1. Add field-<type>.schema.json to src/templates/refs/
      *   2. Add field-<type>.schema.json to schemas/refs/ (distribution copy)
      *   3. Add the type slug to SchemaEmitter::FIELD_TYPE_ORDER
-     *   4. Add the anyOf entry to schemas/acf.schema.json
+     *   4. Add the slug to the `type` enum in refs/field.schema.json (template + dist)
+     *   5. Regenerate schemas/acf.schema.json + schemas/field-item.schema.json
+     *      (emitFieldItem() builds the per-type if/then branch from FIELD_TYPE_ORDER)
      *
      * IMPORTANT: any edit to schemas/refs/ files MUST be mirrored back into
      * src/templates/refs/ — the template directory is the source of truth;

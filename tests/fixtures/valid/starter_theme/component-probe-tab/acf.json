@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-tab",
+    "title": "Probe Tab",
+    "fields": [
+        { "key": "field_probe_tab_t", "label": "Section", "name": "", "type": "tab", "allow_in_bindings": 0, "placement": "top", "endpoint": 0, "selected": 0 }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}
