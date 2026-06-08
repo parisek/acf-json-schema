@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-oembed",
+    "title": "Probe oEmbed",
+    "fields": [
+        { "key": "field_probe_oembed_v", "label": "Video", "name": "video", "type": "oembed", "allow_in_bindings": 0, "width": "", "height": 480 }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}

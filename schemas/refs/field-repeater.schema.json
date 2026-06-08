@@ -6,7 +6,7 @@
     "properties": {
         "sub_fields": {
             "type": "array",
-            "items": { "$ref": "field.schema.json" }
+            "items": { "$ref": "../field-item.schema.json" }
         },
         "min": { "type": ["integer", "string"] },
         "max": { "type": ["integer", "string"] },

@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-clone",
+    "title": "Probe Clone",
+    "fields": [
+        { "key": "field_probe_clone_c", "label": "Cloned", "name": "cloned", "type": "clone", "allow_in_bindings": 0, "clone": ["group_other"], "display": "seamless", "layout": "block", "prefix_label": 0, "prefix_name": 0 }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}

@@ -2,5 +2,12 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-page_link.schema.json",
     "title": "ACF Field — Page Link",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "post_type": { "type": ["array", "string"] },
+        "taxonomy": { "type": ["array", "string"] },
+        "allow_null": { "enum": [0, 1] },
+        "allow_archives": { "enum": [0, 1] },
+        "multiple": { "enum": [0, 1] }
+    }
 }

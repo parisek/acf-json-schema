@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-button_group",
+    "title": "Probe Button Group",
+    "fields": [
+        { "key": "field_probe_bg_b", "label": "Align", "name": "align", "type": "button_group", "allow_in_bindings": 0, "choices": { "left": "Left", "right": "Right" }, "allow_null": 0, "layout": "horizontal", "return_format": "value" }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}

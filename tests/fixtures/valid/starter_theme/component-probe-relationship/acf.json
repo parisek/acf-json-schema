@@ -1,0 +1,10 @@
+{
+    "key": "group_probe-relationship",
+    "title": "Probe Relationship",
+    "fields": [
+        { "key": "field_probe_rel_r", "label": "Related", "name": "related", "type": "relationship", "allow_in_bindings": 0, "post_type": [], "taxonomy": [], "filters": ["search"], "elements": "", "min": "", "max": 0, "return_format": "object", "bidirectional_target": [] }
+    ],
+    "location": [[{ "param": "post_type", "operator": "==", "value": "post" }]],
+    "modified": 1756303996,
+    "active": true
+}

@@ -2,5 +2,9 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-time_picker.schema.json",
     "title": "ACF Field — Time Picker",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "display_format": { "type": "string" },
+        "return_format": { "type": "string" }
+    }
 }
