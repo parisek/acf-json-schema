@@ -1,0 +1,28 @@
+{
+    "key": "group_file-junk",
+    "title": "File junk prop",
+    "fields": [
+        {
+            "key": "field_file_junk_video",
+            "label": "Video",
+            "name": "video",
+            "type": "file",
+            "return_format": "array",
+            "library": "all",
+            "mime_types": "mp4,webm",
+            "allow_in_bindings": 0,
+            "not_a_real_acf_prop": "boom"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/file-junk"
+            }
+        ]
+    ],
+    "modified": 1756303996,
+    "active": true
+}

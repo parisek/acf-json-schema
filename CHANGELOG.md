@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Top-level `file` fields no longer fail validation for their standard ACF properties. `refs/field-file.schema.json` was an empty stub, so `return_format`, `library`, `min_size`, `max_size`, and `mime_types` were treated as unevaluated and rejected by `acf.schema.json`'s `unevaluatedProperties: false` (the same field validated fine when nested in `sub_fields`, which doesn't apply that keyword). The stub is now populated with the file field's properties. ([#8](https://github.com/parisek/acf-json-schema/issues/8))
+
 ## [0.4.1] - 2026-06-01
 
 ### Changed

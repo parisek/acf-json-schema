@@ -1,0 +1,5 @@
+{
+    "description": "A top-level file field accepts its real ACF props (return_format/library/mime_types) but unevaluatedProperties:false must still reject an unknown key — the populated field-file stub must not become a catch-all.",
+    "schema": "https://schemas.parisek.dev/acf/acf.schema.json",
+    "min_violations": 1
+}

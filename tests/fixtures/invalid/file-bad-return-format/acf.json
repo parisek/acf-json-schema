@@ -1,0 +1,23 @@
+{
+    "key": "group_file-bad-rf",
+    "title": "File bad return_format",
+    "fields": [
+        {
+            "key": "field_file_bad_rf_video",
+            "label": "Video",
+            "name": "video",
+            "type": "file",
+            "return_format": "blob",
+            "library": "all",
+            "mime_types": "mp4,webm",
+            "allow_in_bindings": 0
+        }
+    ],
+    "location": [
+        [
+            { "param": "block", "operator": "==", "value": "acf/file-bad-rf" }
+        ]
+    ],
+    "modified": 1756303996,
+    "active": true
+}
