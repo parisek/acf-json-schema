@@ -16,8 +16,26 @@ final class AcfLinterTest extends TestCase {
 
     private const BASE = 'https://schemas.parisek.dev/acf/';
 
-    public function test_dispatch_block_by_filename(): void {
-        self::assertSame(self::BASE . 'block.schema.json', $this->linter->dispatch('a/block.json', (object) []));
+    public function test_dispatch_block_with_acf_key(): void {
+        $json = (object) ['name' => 'acf/hero', 'acf' => (object) ['mode' => 'preview']];
+        self::assertSame(self::BASE . 'block.schema.json', $this->linter->dispatch('a/block.json', $json));
+    }
+
+    public function test_dispatch_skips_native_block_json_without_acf_key(): void {
+        $json = (object) ['name' => 'core-ish/native', 'title' => 'Native block'];
+        self::assertNull($this->linter->dispatch('a/block.json', $json));
+    }
+
+    public function test_lintfile_native_block_json_is_skipped_not_failed(): void {
+        $tmp = sys_get_temp_dir() . '/block.json';
+        file_put_contents($tmp, '{"apiVersion": 3, "name": "myplugin/native", "title": "Native"}');
+        try {
+            $result = $this->linter->lintFile($tmp, false);
+            self::assertTrue($result->skipped);
+            self::assertNull($result->kind);
+        } finally {
+            unlink($tmp);
+        }
     }
 
     public function test_dispatch_acf_by_filename(): void {
