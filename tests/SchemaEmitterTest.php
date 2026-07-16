@@ -33,6 +33,27 @@ final class SchemaEmitterTest extends TestCase {
         }
     }
 
+    public function test_field_with_unknown_type_fails_via_base_enum(): void {
+        $linter = new \Parisek\AcfJsonSchema\Lint\AcfLinter(__DIR__ . '/../schemas');
+        $dir = sys_get_temp_dir() . '/acf-bad-type-' . getmypid();
+        @mkdir($dir);
+        $file = $dir . '/acf.json';
+        file_put_contents($file, (string) json_encode([
+            'key' => 'group_x', 'title' => 'T',
+            'fields' => [['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'no_such_type', 'allow_in_bindings' => 0]],
+            'location' => [[['param' => 'post_type', 'operator' => '==', 'value' => 'post']]],
+            'modified' => 1, 'active' => true,
+        ]));
+        try {
+            $result = $linter->lintFile($file, false);
+            $this->assertFalse($result->valid);
+            $this->assertArrayHasKey('/fields/0/type', $result->errors);
+        } finally {
+            @unlink($file);
+            @rmdir($dir);
+        }
+    }
+
     public function test_every_discriminator_branch_requires_type(): void {
         $fieldItem = (new SchemaEmitter())->emitFieldItem();
         $this->assertIsArray($fieldItem['allOf']);
