@@ -17,12 +17,12 @@ final class EmitterConsistencyTest extends TestCase {
     private const SCHEMAS = __DIR__ . '/../schemas';
 
     /**
-     * Mirror Generator::writeJson exactly.
+     * Mirror Generator::writeJson exactly (shared Json encoder).
      *
      * @param array<string, mixed> $data
      */
     private static function encode(array $data): string {
-        return json_encode($data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . "\n";
+        return \Parisek\AcfJsonSchema\Json::encode($data);
     }
 
     public function test_committed_field_item_matches_emitter(): void {

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The schema generator and `acf-lint --fix` now share one JSON writer (`Json::encode()`) with canonical flags matching ACF's own local-JSON export style (4-space pretty print, unescaped slashes and unicode). Previously the two write paths disagreed on `JSON_UNESCAPED_UNICODE`, so a fixed file and a generated file escaped non-ASCII differently. Byte-neutral for the committed schemas (ASCII-only). ([#17](https://github.com/parisek/acf-json-schema/issues/17))
+
 ## [0.5.0] - 2026-06-08
 
 ### Fixed

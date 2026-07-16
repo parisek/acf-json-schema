@@ -82,8 +82,7 @@ final class AcfLinter {
         $fixed = false;
         if ($fix && $this->needsModifiedBump($json)) {
             $json->modified = time();
-            $encoded = json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
-            file_put_contents($path, $encoded);
+            file_put_contents($path, \Parisek\AcfJsonSchema\Json::encode($json));
             $fixed = true;
         }
 
