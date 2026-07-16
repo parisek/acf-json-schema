@@ -23,6 +23,7 @@ if (!$autoloaded) {
 
 use Parisek\AcfJsonSchema\Lint\AcfLinter;
 use Parisek\AcfJsonSchema\Lint\CliOptions;
+use Parisek\AcfJsonSchema\Lint\Reporter;
 
 $opts = CliOptions::parse(array_slice($argv, 1));
 
@@ -44,16 +45,22 @@ if ($opts->help || $opts->paths === []) {
     acf-lint — validate ACF / CPT / taxonomy / block JSON against parisek/acf-json-schema.
 
     Usage:
-      acf-lint [--strict] [--fix] [--wpml] [--] <path>...
+      acf-lint [--strict] [--fix] [--wpml] [--format=<text|json|github>] [--max-errors=<N>] [--] <path>...
 
-      <path>     File or directory (directories are walked recursively for *.json)
-      --strict   Exit 1 if any file has findings (CI gate)
-      --fix      Auto-bump stale/missing `modified` timestamps
-      --wpml     Require WPML/ACFML translation keys to be PRESENT on field
-                 groups (acfml_field_group_mode) and every field
-                 (wpml_cf_preferences). Opt-in; schemas keep them optional.
-      --version  Print the installed package version
-      --         Treat every following argument as a path (even if it starts with -)
+      <path>          File or directory (directories are walked recursively for *.json)
+      --strict        Exit 1 if any file has findings (CI gate)
+      --fix           Auto-bump stale/missing `modified` timestamps
+      --wpml          Require WPML/ACFML translation keys to be PRESENT on field
+                      groups (acfml_field_group_mode) and every field
+                      (wpml_cf_preferences). Opt-in; schemas keep them optional.
+      --format=<f>    Output format: text (default; findings on stderr, summary
+                      on stdout), json (one machine-readable document on stdout),
+                      github (GitHub Actions ::error annotations on stdout)
+      --max-errors=<N>  Cap schema errors collected per file (default 50)
+      --version       Print the installed package version
+      --              Treat every following argument as a path (even if it starts with -)
+
+    Colors: text format only, auto-disabled when stderr is not a TTY or NO_COLOR is set.
 
     Exit codes: 0 ok (or findings without --strict), 1 findings under --strict / bad args.
 
@@ -61,52 +68,21 @@ if ($opts->help || $opts->paths === []) {
     exit($opts->paths === [] && !$opts->help ? 1 : 0);
 }
 
-$strict = $opts->strict;
-$fix = $opts->fix;
-$wpml = $opts->wpml;
-
-$linter = new AcfLinter(__DIR__ . '/../schemas');
+$linter = new AcfLinter(__DIR__ . '/../schemas', $opts->maxErrors);
 $files = $linter->collectJsonFiles($opts->paths);
 
-$errorFiles = 0;
-$okFiles = 0;
-$skipped = 0;
-$fixedFiles = 0;
-$totalErrors = 0;
-
+$results = [];
 foreach ($files as $file) {
-    $r = $linter->lintFile($file, $fix, $wpml);
-    if ($r->fixed) {
-        $fixedFiles++;
-    }
-    if ($r->skipped) {
-        $skipped++;
-        continue;
-    }
-    if ($r->valid) {
-        $okFiles++;
-        continue;
-    }
-
-    $errorFiles++;
-    $totalErrors += max(1, count($r->errors));
-    fwrite(STDERR, "\033[31m✗\033[0m {$r->path} ({$r->kind})\n");
-    foreach ($r->errors as $pointer => $message) {
-        $line = is_string($message) ? $message : (string) json_encode($message);
-        fwrite(STDERR, "    \033[33m{$pointer}\033[0m — {$line}\n");
-    }
+    $results[] = $linter->lintFile($file, $opts->fix, $opts->wpml);
 }
 
-$summary = count($files) . " files scanned, \033[32m{$okFiles} OK\033[0m";
-if ($errorFiles) {
-    $summary .= ", \033[31m{$errorFiles} with errors ({$totalErrors})\033[0m";
+// Findings go to stderr in text format, so color follows stderr's TTY-ness.
+$color = getenv('NO_COLOR') === false && function_exists('stream_isatty') && @stream_isatty(STDERR);
+$out = (new Reporter($color))->render($results, $opts->format);
+if ($out['stderr'] !== '') {
+    fwrite(STDERR, $out['stderr']);
 }
-if ($fixedFiles) {
-    $summary .= ", \033[33m{$fixedFiles} fixed\033[0m";
-}
-if ($skipped) {
-    $summary .= ", {$skipped} skipped";
-}
-fwrite(STDOUT, $summary . "\n");
+fwrite(STDOUT, $out['stdout']);
 
-exit(($strict && $errorFiles > 0) ? 1 : 0);
+$errorFiles = count(array_filter($results, static fn ($r): bool => !$r->skipped && !$r->valid));
+exit(($opts->strict && $errorFiles > 0) ? 1 : 0);

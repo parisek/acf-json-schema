@@ -19,13 +19,15 @@ final class AcfLinter {
 
     private OpisValidator $opis;
 
-    public function __construct(string $schemasRoot) {
+    public function __construct(string $schemasRoot, int $maxErrors = CliOptions::DEFAULT_MAX_ERRORS) {
         $resolver = new SchemaResolver();
         // Lazy-resolves every $ref (incl. per-type field refs) from disk.
         $resolver->registerPrefix(self::SCHEMA_BASE, rtrim($schemasRoot, '/'));
 
         $this->opis = new OpisValidator();
-        $this->opis->setMaxErrors(PHP_INT_MAX);
+        // Capped: with 36 discriminator branches a badly broken file can
+        // otherwise generate pathological error trees (was PHP_INT_MAX).
+        $this->opis->setMaxErrors($maxErrors);
         $this->opis->setResolver($resolver);
     }
 

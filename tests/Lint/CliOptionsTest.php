@@ -53,4 +53,49 @@ final class CliOptionsTest extends TestCase {
         $o = CliOptions::parse(['--bogus', '--also-bogus']);
         $this->assertSame('unknown option: --bogus', $o->error);
     }
+
+    public function test_format_defaults_to_text(): void {
+        $this->assertSame('text', CliOptions::parse(['acf-json'])->format);
+    }
+
+    public function test_format_accepts_json_and_github(): void {
+        $this->assertSame('json', CliOptions::parse(['--format=json', 'acf-json'])->format);
+        $this->assertSame('github', CliOptions::parse(['--format=github', 'acf-json'])->format);
+        $this->assertSame('text', CliOptions::parse(['--format=text', 'acf-json'])->format);
+    }
+
+    public function test_unknown_format_is_an_error(): void {
+        $o = CliOptions::parse(['--format=xml', 'acf-json']);
+        $this->assertSame('invalid --format value: xml (expected text, json or github)', $o->error);
+    }
+
+    public function test_bare_format_flag_is_an_error(): void {
+        $o = CliOptions::parse(['--format', 'acf-json']);
+        $this->assertSame('option --format requires a value (--format=<text|json|github>)', $o->error);
+    }
+
+    public function test_max_errors_defaults_to_50(): void {
+        $this->assertSame(50, CliOptions::parse(['acf-json'])->maxErrors);
+    }
+
+    public function test_max_errors_accepts_positive_integer(): void {
+        $this->assertSame(7, CliOptions::parse(['--max-errors=7', 'acf-json'])->maxErrors);
+    }
+
+    public function test_max_errors_rejects_non_positive_or_garbage(): void {
+        $this->assertSame(
+            'invalid --max-errors value: 0 (expected a positive integer)',
+            CliOptions::parse(['--max-errors=0', 'acf-json'])->error,
+        );
+        $this->assertSame(
+            'invalid --max-errors value: many (expected a positive integer)',
+            CliOptions::parse(['--max-errors=many', 'acf-json'])->error,
+        );
+    }
+
+    public function test_value_options_after_double_dash_are_paths(): void {
+        $o = CliOptions::parse(['--', '--format=json']);
+        $this->assertSame('text', $o->format);
+        $this->assertSame(['--format=json'], $o->paths);
+    }
 }
