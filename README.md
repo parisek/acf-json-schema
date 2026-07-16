@@ -63,6 +63,14 @@ vendor/bin/acf-lint --strict path/to/templates path/to/blocks
 | `--strict` | Exit non-zero on any finding (CI gate). |
 | `--fix` | Bump stale/missing `modified` timestamps. |
 | `--wpml` | Require WPML/ACFML translation keys to be **present**: `acfml_field_group_mode` on each field group and `wpml_cf_preferences` on every value-holding field (recurses into repeater/group/flexible-content; `tab`/`message`/`accordion` are exempt). Opt-in — the schemas keep these keys optional so non-WPML projects are unaffected. |
+| `--format=<f>` | `text` (default; findings on stderr, summary on stdout), `json` (one machine-readable document on stdout), or `github` (GitHub Actions `::error` annotations — findings appear inline on the PR diff). |
+| `--max-errors=<N>` | Cap schema errors collected per file (default 50). |
+
+Text output is colored only on a TTY; set `NO_COLOR` to force plain output. Example CI step with inline PR annotations:
+
+```yaml
+- run: vendor/bin/acf-lint --strict --format=github static/templates
+```
 
 ## For maintainers
 

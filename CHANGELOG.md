@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `acf-lint --version` prints the installed package version; `--` terminates option parsing so paths starting with `-` can be linted. ([#13](https://github.com/parisek/acf-json-schema/issues/13))
+- `acf-lint --format=<text|json|github>` — `json` emits one machine-readable document on stdout; `github` emits GitHub Actions `::error` workflow commands so findings annotate the PR diff. ANSI colors in the default text format are now auto-disabled when stderr is not a TTY or `NO_COLOR` is set. ([#19](https://github.com/parisek/acf-json-schema/issues/19))
+- `acf-lint --max-errors=<N>` caps schema errors collected per file (new default 50, previously unbounded — a badly broken file could generate pathological error trees across the 36 discriminator branches). ([#19](https://github.com/parisek/acf-json-schema/issues/19))
 
 ## [0.5.0] - 2026-06-08
 

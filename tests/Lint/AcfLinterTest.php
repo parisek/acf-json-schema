@@ -65,6 +65,33 @@ final class AcfLinterTest extends TestCase {
         self::assertNull($this->linter->dispatch('x/random.json', (object) ['foo' => 'bar']));
     }
 
+    public function test_max_errors_caps_reported_findings(): void {
+        // 40 fields, each missing `type` → one finding per field uncapped.
+        $fields = [];
+        for ($i = 0; $i < 40; $i++) {
+            $fields[] = ['key' => "field_{$i}", 'label' => 'A', 'name' => "a{$i}", 'allow_in_bindings' => 0];
+        }
+        $doc = [
+            'key' => 'group_x', 'title' => 'T', 'fields' => $fields,
+            'location' => [[['param' => 'post_type', 'operator' => '==', 'value' => 'post']]],
+            'modified' => 1, 'active' => true,
+        ];
+        $dir = sys_get_temp_dir() . '/acf-cap-' . getmypid();
+        @mkdir($dir);
+        $file = $dir . '/acf.json';
+        file_put_contents($file, (string) json_encode($doc));
+        try {
+            $capped = (new AcfLinter(__DIR__ . '/../../schemas', maxErrors: 5))->lintFile($file, false);
+            $uncapped = (new AcfLinter(__DIR__ . '/../../schemas', maxErrors: 1000))->lintFile($file, false);
+            self::assertFalse($capped->valid);
+            self::assertNotEmpty($capped->errors);
+            self::assertLessThan(count($uncapped->errors), count($capped->errors));
+        } finally {
+            @unlink($file);
+            @rmdir($dir);
+        }
+    }
+
     public function test_lintfile_valid_acf_fixture_passes(): void {
         $path = __DIR__ . '/../fixtures/valid/fellows/component-apartment-list/acf.json';
         $result = $this->linter->lintFile($path, false);
