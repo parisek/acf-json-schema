@@ -19,6 +19,7 @@
     "homepage": "https://github.com/parisek/acf-json-schema",
     "require": {
         "php": "^8.3",
+        "composer-runtime-api": "^2.0",
         "nikic/php-parser": "^5.0",
         "opis/json-schema": "^2.3"
     },

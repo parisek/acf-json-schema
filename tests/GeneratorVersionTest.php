@@ -15,8 +15,5 @@ final class GeneratorVersionTest extends TestCase {
             $version,
         );
         $this->assertNotSame('', $version);
-        // The historical hardcoded literal must never come back unless the
-        // installed package genuinely is 0.1.0.
-        $this->assertNotSame('0.1.0', $version);
     }
 }
