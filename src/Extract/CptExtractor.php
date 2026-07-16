@@ -55,7 +55,9 @@ final class CptExtractor {
             // filter can add more (issue #18, verified against 6.8.2 source).
             'supports' => [
                 'type' => 'array',
-                'items' => ['type' => 'string'],
+                // minLength 1: ACF strips empty strings itself (array_filter
+                // in class-acf-post-type.php), so "" never appears in exports.
+                'items' => ['type' => 'string', 'minLength' => 1],
                 'description' => 'Editor features. Stock ACF 6.8 checkboxes: title, editor, notes, thumbnail, author, trackbacks, revisions, custom-fields, comments, excerpt, page-attributes, post-formats; custom values allowed (UI "Add Custom").',
             ],
             'taxonomies' => ['type' => ['array', 'string'], 'description' => 'Array of taxonomy slugs; ACF serializes "none selected" as an empty string.'],

@@ -90,7 +90,8 @@
         "supports": {
             "type": "array",
             "items": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
             },
             "description": "Editor features. Stock ACF 6.8 checkboxes: title, editor, notes, thumbnail, author, trackbacks, revisions, custom-fields, comments, excerpt, page-attributes, post-formats; custom values allowed (UI \"Add Custom\")."
         },

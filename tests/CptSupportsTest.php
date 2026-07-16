@@ -50,5 +50,12 @@ final class CptSupportsTest extends TestCase {
     public function test_non_string_supports_entry_is_rejected(): void {
         $r = $this->lintCpt(['title', 123]);
         self::assertFalse($r->valid);
+        self::assertArrayHasKey('/supports/1', $r->errors, (string) json_encode($r->errors));
+    }
+
+    public function test_empty_string_supports_entry_is_rejected(): void {
+        $r = $this->lintCpt(['title', '']);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/supports/1', $r->errors, (string) json_encode($r->errors));
     }
 }
