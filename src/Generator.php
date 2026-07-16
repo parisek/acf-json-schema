@@ -122,10 +122,6 @@ final class Generator {
 
     /** @param array<string, mixed> $data */
     public function writeJson(string $path, array $data): void {
-        $flags = JSON_UNESCAPED_SLASHES;
-        if ($this->pretty) {
-            $flags |= JSON_PRETTY_PRINT;
-        }
-        file_put_contents($path, json_encode($data, $flags) . "\n");
+        file_put_contents($path, Json::encode($data, $this->pretty));
     }
 }

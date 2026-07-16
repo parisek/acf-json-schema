@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `acf-lint` no longer validates native (non-ACF) Gutenberg `block.json` files against the ACF block schema. Dispatch was purely filename-based, so a recursive scan over a theme with native blocks produced guaranteed false positives; a `block.json` without an `acf` key is now reported as skipped. ([#14](https://github.com/parisek/acf-json-schema/issues/14))
 - `field-item.schema.json` discriminator branches now carry `required: ["type"]` in their `if`. `properties` alone passes vacuously on a missing key, so a field without `type` matched every branch and all 36 per-type refs were enforced at once — an avalanche of confusing errors instead of the single "required properties (type) are missing". ([#15](https://github.com/parisek/acf-json-schema/issues/15))
 - `_meta.json` `generator_version` now reports the actually installed package version via Composer's runtime API instead of a hardcoded `0.1.0`. ([#16](https://github.com/parisek/acf-json-schema/issues/16))
+- The schema generator and `acf-lint --fix` now share one JSON writer (`Json::encode()`) with canonical flags matching ACF's own local-JSON export style (4-space pretty print, unescaped slashes and unicode). Previously the two write paths disagreed on `JSON_UNESCAPED_UNICODE`, so a fixed file and a generated file escaped non-ASCII differently. Byte-neutral for the committed schemas (ASCII-only). ([#17](https://github.com/parisek/acf-json-schema/issues/17))
 
 ### Added
 

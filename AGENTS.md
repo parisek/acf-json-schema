@@ -56,9 +56,9 @@ ACF added a type (e.g. `icon_picker` in 6.8). Required edits — all four, plus 
 - Full regen needs a live WP: `bin/acf-schema-gen --wp-root <path> --output <dir>`, then diff against `schemas/`.
 - The three extractor-backed schemas are pure PHP and regen without WP, e.g.:
   ```bash
-  php -r 'require "vendor/autoload.php"; echo json_encode((new Parisek\AcfJsonSchema\Extract\TaxonomyExtractor())->emit(), JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT)."\n";' > schemas/taxonomy.schema.json
+  php -r 'require "vendor/autoload.php"; echo Parisek\AcfJsonSchema\Json::encode((new Parisek\AcfJsonSchema\Extract\TaxonomyExtractor())->emit());' > schemas/taxonomy.schema.json
   ```
-  Match `Generator::writeJson()` exactly: `JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT` (4-space) + trailing `\n`.
+  Match `Generator::writeJson()` exactly — i.e. `Json::encode()`: `JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT` (4-space) + trailing `\n`. `src/Json.php` is the package's single JSON writer (generator + lint `--fix`); the flags mirror ACF's own local-JSON export style — don't fork a second flag set.
 
 ## Conventions & gotchas
 
