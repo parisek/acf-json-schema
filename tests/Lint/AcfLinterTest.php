@@ -21,6 +21,11 @@ final class AcfLinterTest extends TestCase {
         self::assertSame(self::BASE . 'block.schema.json', $this->linter->dispatch('a/block.json', $json));
     }
 
+    public function test_dispatch_block_with_explicit_null_acf_is_validated_not_skipped(): void {
+        $json = (object) ['name' => 'acf/broken', 'acf' => null];
+        self::assertSame(self::BASE . 'block.schema.json', $this->linter->dispatch('a/block.json', $json));
+    }
+
     public function test_dispatch_skips_native_block_json_without_acf_key(): void {
         $json = (object) ['name' => 'core-ish/native', 'title' => 'Native block'];
         self::assertNull($this->linter->dispatch('a/block.json', $json));
