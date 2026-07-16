@@ -48,15 +48,17 @@ final class CptExtractor {
             'capability_type' => ['type' => ['string', 'array']],
             'capabilities' => ['type' => 'object'],
             'map_meta_cap' => ['type' => 'boolean'],
+            // Open set of strings, not a closed enum: ACF 6.8's CPT UI ships
+            // 12 stock checkboxes (incl. notes, post-formats) plus an
+            // "Add Custom" input (allow_custom) whose values are merged into
+            // supports verbatim, and the acf/post_type/available_supports
+            // filter can add more (issue #18, verified against 6.8.2 source).
             'supports' => [
                 'type' => 'array',
-                'items' => [
-                    'enum' => [
-                        'title', 'editor', 'revisions', 'thumbnail',
-                        'custom-fields', 'page-attributes', 'excerpt',
-                        'comments', 'trackbacks', 'author',
-                    ],
-                ],
+                // minLength 1: ACF strips empty strings itself (array_filter
+                // in class-acf-post-type.php), so "" never appears in exports.
+                'items' => ['type' => 'string', 'minLength' => 1],
+                'description' => 'Editor features. Stock ACF 6.8 checkboxes: title, editor, notes, thumbnail, author, trackbacks, revisions, custom-fields, comments, excerpt, page-attributes, post-formats; custom values allowed (UI "Add Custom").',
             ],
             'taxonomies' => ['type' => ['array', 'string'], 'description' => 'Array of taxonomy slugs; ACF serializes "none selected" as an empty string.'],
             'has_archive' => ['type' => ['boolean', 'string']],

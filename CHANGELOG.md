@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- CPT `supports` is no longer a closed enum — ACF 6.8's CPT UI ships 12 stock checkboxes including `notes` and `post-formats` (both previously rejected) plus an "Add Custom" input whose values land in `supports` verbatim, so items are now validated as strings. Verified against the ACF 6.8.2 source. ([#18](https://github.com/parisek/acf-json-schema/issues/18))
 - `acf-lint` no longer silently ignores unknown options — a typo like `--stric` now exits 1 with an error instead of degrading the `--strict` CI gate into an always-green no-op. A missing Composer autoloader also reports an actionable message instead of a raw PHP fatal. ([#13](https://github.com/parisek/acf-json-schema/issues/13))
 - `acf-lint` no longer validates native (non-ACF) Gutenberg `block.json` files against the ACF block schema. Dispatch was purely filename-based, so a recursive scan over a theme with native blocks produced guaranteed false positives; a `block.json` without an `acf` key is now reported as skipped. ([#14](https://github.com/parisek/acf-json-schema/issues/14))
 - `field-item.schema.json` discriminator branches now carry `required: ["type"]` in their `if`. `properties` alone passes vacuously on a missing key, so a field without `type` matched every branch and all 36 per-type refs were enforced at once — an avalanche of confusing errors instead of the single "required properties (type) are missing". ([#15](https://github.com/parisek/acf-json-schema/issues/15))
