@@ -107,7 +107,12 @@ final class SchemaEmitter {
         $branches = [];
         foreach (self::FIELD_TYPE_ORDER as $type) {
             $branches[] = [
-                'if'   => ['properties' => ['type' => ['const' => $type]]],
+                // required:["type"] keeps the branch vacuous when `type` is
+                // absent — `properties` alone passes on a missing key, so all
+                // 36 then-refs would be enforced at once and the user would
+                // get an avalanche of per-type errors instead of the base
+                // schema's single "type is required".
+                'if'   => ['properties' => ['type' => ['const' => $type]], 'required' => ['type']],
                 'then' => ['$ref' => "refs/field-{$type}.schema.json"],
             ];
         }
