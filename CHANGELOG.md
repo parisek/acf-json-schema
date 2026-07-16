@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-16
+
 ### Fixed
 
 - CPT `supports` is no longer a closed enum — ACF 6.8's CPT UI ships 12 stock checkboxes including `notes` and `post-formats` (both previously rejected) plus an "Add Custom" input whose values land in `supports` verbatim, so items are now validated as strings. Verified against the ACF 6.8.2 source. ([#18](https://github.com/parisek/acf-json-schema/issues/18))
