@@ -8,27 +8,43 @@ $autoloads = [
     __DIR__ . '/../vendor/autoload.php',            // standalone checkout
     __DIR__ . '/../../../autoload.php',             // installed in a consumer's vendor/
 ];
+$autoloaded = false;
 foreach ($autoloads as $a) {
     if (file_exists($a)) {
         require_once $a;
+        $autoloaded = true;
         break;
     }
 }
+if (!$autoloaded) {
+    fwrite(STDERR, "Error: Composer autoloader not found. Run `composer install`, or install this package as a dependency and use vendor/bin/acf-lint.\n");
+    exit(1);
+}
 
 use Parisek\AcfJsonSchema\Lint\AcfLinter;
+use Parisek\AcfJsonSchema\Lint\CliOptions;
 
-$args = array_slice($argv, 1);
-$strict = in_array('--strict', $args, true);
-$fix = in_array('--fix', $args, true);
-$wpml = in_array('--wpml', $args, true);
-$paths = array_values(array_filter($args, static fn (string $a): bool => !str_starts_with($a, '-')));
+$opts = CliOptions::parse(array_slice($argv, 1));
 
-if (in_array('--help', $args, true) || $paths === []) {
+if ($opts->error !== null) {
+    fwrite(STDERR, "Error: {$opts->error}. Run acf-lint --help for usage.\n");
+    exit(1);
+}
+
+if ($opts->version) {
+    $version = \Composer\InstalledVersions::isInstalled('parisek/acf-json-schema')
+        ? \Composer\InstalledVersions::getPrettyVersion('parisek/acf-json-schema')
+        : 'unknown';
+    fwrite(STDOUT, "acf-lint {$version}\n");
+    exit(0);
+}
+
+if ($opts->help || $opts->paths === []) {
     fwrite(STDERR, <<<USAGE
     acf-lint — validate ACF / CPT / taxonomy / block JSON against parisek/acf-json-schema.
 
     Usage:
-      acf-lint [--strict] [--fix] <path>...
+      acf-lint [--strict] [--fix] [--wpml] [--] <path>...
 
       <path>     File or directory (directories are walked recursively for *.json)
       --strict   Exit 1 if any file has findings (CI gate)
@@ -36,15 +52,21 @@ if (in_array('--help', $args, true) || $paths === []) {
       --wpml     Require WPML/ACFML translation keys to be PRESENT on field
                  groups (acfml_field_group_mode) and every field
                  (wpml_cf_preferences). Opt-in; schemas keep them optional.
+      --version  Print the installed package version
+      --         Treat every following argument as a path (even if it starts with -)
 
     Exit codes: 0 ok (or findings without --strict), 1 findings under --strict / bad args.
 
     USAGE);
-    exit($paths === [] ? 1 : 0);
+    exit($opts->paths === [] && !$opts->help ? 1 : 0);
 }
 
+$strict = $opts->strict;
+$fix = $opts->fix;
+$wpml = $opts->wpml;
+
 $linter = new AcfLinter(__DIR__ . '/../schemas');
-$files = $linter->collectJsonFiles($paths);
+$files = $linter->collectJsonFiles($opts->paths);
 
 $errorFiles = 0;
 $okFiles = 0;
