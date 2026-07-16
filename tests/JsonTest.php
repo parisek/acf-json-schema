@@ -23,6 +23,30 @@ final class JsonTest extends TestCase {
         $this->assertSame("{\"a\":\"č/x\"}\n", $out);
     }
 
+    public function test_fix_rewrite_preserves_acf_export_bytes(): void {
+        $linter = new \Parisek\AcfJsonSchema\Lint\AcfLinter(__DIR__ . '/../schemas');
+        $dir = sys_get_temp_dir() . '/acf-fix-bytes-' . getmypid();
+        @mkdir($dir);
+        $file = $dir . '/foo.json';
+        // CPT shape with stale modified → --fix rewrites the whole file.
+        file_put_contents($file, (string) json_encode([
+            'key' => 'post_type_x', 'title' => 'Škola', 'post_type' => 'x',
+            'description' => 'https://example.com/a', 'modified' => 0,
+        ]));
+        try {
+            $result = $linter->lintFile($file, true);
+            $this->assertTrue($result->fixed);
+            $raw = (string) file_get_contents($file);
+            $this->assertStringContainsString('"Škola"', $raw, 'unicode must stay unescaped');
+            $this->assertStringContainsString('https://example.com/a', $raw, 'slashes must stay unescaped');
+            $this->assertStringContainsString("{\n    \"key\"", $raw, '4-space pretty print');
+            $this->assertStringEndsWith("}\n", $raw, 'trailing newline');
+        } finally {
+            @unlink($file);
+            @rmdir($dir);
+        }
+    }
+
     public function test_accepts_stdclass_documents(): void {
         $doc = json_decode('{"title": "Škola", "modified": 1}');
         $this->assertInstanceOf(\stdClass::class, $doc);
