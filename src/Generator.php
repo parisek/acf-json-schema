@@ -93,11 +93,24 @@ final class Generator {
         }
     }
 
+    /**
+     * Installed package version for the _meta.json provenance sidecar.
+     * Composer's runtime API covers both install modes: as a consumer
+     * dependency it reports the locked version; in a standalone checkout the
+     * root package reports its VCS-derived version (e.g. dev-main).
+     */
+    public static function packageVersion(): string {
+        if (!\Composer\InstalledVersions::isInstalled('parisek/acf-json-schema')) {
+            return 'unknown';
+        }
+        return \Composer\InstalledVersions::getPrettyVersion('parisek/acf-json-schema') ?? 'unknown';
+    }
+
     private function writeMetaSidecar(): void {
         global $wp_version;
         $meta = [
             'generator' => 'parisek/acf-json-schema',
-            'generator_version' => '0.1.0',
+            'generator_version' => self::packageVersion(),
             'generated_at' => date('c'),
             'acf_version' => defined('ACF_VERSION') ? ACF_VERSION : 'unknown',
             'acf_edition' => defined('ACF_PRO_VERSION') ? 'Pro' : 'Free',

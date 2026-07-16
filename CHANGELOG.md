@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `_meta.json` `generator_version` now reports the actually installed package version via Composer's runtime API instead of a hardcoded `0.1.0`. ([#16](https://github.com/parisek/acf-json-schema/issues/16))
+
 ## [0.5.0] - 2026-06-08
 
 ### Fixed
