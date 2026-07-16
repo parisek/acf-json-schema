@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `acf-lint` no longer silently ignores unknown options — a typo like `--stric` now exits 1 with an error instead of degrading the `--strict` CI gate into an always-green no-op. A missing Composer autoloader also reports an actionable message instead of a raw PHP fatal. ([#13](https://github.com/parisek/acf-json-schema/issues/13))
+
+### Added
+
+- `acf-lint --version` prints the installed package version; `--` terminates option parsing so paths starting with `-` can be linted. ([#13](https://github.com/parisek/acf-json-schema/issues/13))
+
 ## [0.5.0] - 2026-06-08
 
 ### Fixed
