@@ -36,7 +36,14 @@ final class AcfLinter {
     public function dispatch(string $filename, object $json): ?string {
         $base = basename($filename);
         if ($base === 'block.json') {
-            return self::SCHEMA_BASE . 'block.schema.json';
+            // Only ACF blocks are ours to validate. A native Gutenberg
+            // block.json (no `acf` key) must be skipped, not failed — a
+            // recursive scan over a theme with native blocks would otherwise
+            // produce guaranteed false positives. Key PRESENCE decides
+            // (property_exists, not isset): an explicit "acf": null is an
+            // ACF-authored file with a malformed section and must be
+            // validated (and fail), not skipped.
+            return property_exists($json, 'acf') ? self::SCHEMA_BASE . 'block.schema.json' : null;
         }
         if ($base === 'acf.json') {
             return self::SCHEMA_BASE . 'acf.schema.json';

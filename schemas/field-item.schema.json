@@ -13,7 +13,10 @@
                     "type": {
                         "const": "text"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-text.schema.json"
@@ -25,7 +28,10 @@
                     "type": {
                         "const": "textarea"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-textarea.schema.json"
@@ -37,7 +43,10 @@
                     "type": {
                         "const": "wysiwyg"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-wysiwyg.schema.json"
@@ -49,7 +58,10 @@
                     "type": {
                         "const": "number"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-number.schema.json"
@@ -61,7 +73,10 @@
                     "type": {
                         "const": "range"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-range.schema.json"
@@ -73,7 +88,10 @@
                     "type": {
                         "const": "email"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-email.schema.json"
@@ -85,7 +103,10 @@
                     "type": {
                         "const": "url"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-url.schema.json"
@@ -97,7 +118,10 @@
                     "type": {
                         "const": "password"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-password.schema.json"
@@ -109,7 +133,10 @@
                     "type": {
                         "const": "image"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-image.schema.json"
@@ -121,7 +148,10 @@
                     "type": {
                         "const": "gallery"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-gallery.schema.json"
@@ -133,7 +163,10 @@
                     "type": {
                         "const": "file"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-file.schema.json"
@@ -145,7 +178,10 @@
                     "type": {
                         "const": "link"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-link.schema.json"
@@ -157,7 +193,10 @@
                     "type": {
                         "const": "post_object"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-post_object.schema.json"
@@ -169,7 +208,10 @@
                     "type": {
                         "const": "page_link"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-page_link.schema.json"
@@ -181,7 +223,10 @@
                     "type": {
                         "const": "relationship"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-relationship.schema.json"
@@ -193,7 +238,10 @@
                     "type": {
                         "const": "taxonomy"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-taxonomy.schema.json"
@@ -205,7 +253,10 @@
                     "type": {
                         "const": "user"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-user.schema.json"
@@ -217,7 +268,10 @@
                     "type": {
                         "const": "select"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-select.schema.json"
@@ -229,7 +283,10 @@
                     "type": {
                         "const": "checkbox"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-checkbox.schema.json"
@@ -241,7 +298,10 @@
                     "type": {
                         "const": "radio"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-radio.schema.json"
@@ -253,7 +313,10 @@
                     "type": {
                         "const": "true_false"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-true_false.schema.json"
@@ -265,7 +328,10 @@
                     "type": {
                         "const": "button_group"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-button_group.schema.json"
@@ -277,7 +343,10 @@
                     "type": {
                         "const": "color_picker"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-color_picker.schema.json"
@@ -289,7 +358,10 @@
                     "type": {
                         "const": "icon_picker"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-icon_picker.schema.json"
@@ -301,7 +373,10 @@
                     "type": {
                         "const": "date_picker"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-date_picker.schema.json"
@@ -313,7 +388,10 @@
                     "type": {
                         "const": "time_picker"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-time_picker.schema.json"
@@ -325,7 +403,10 @@
                     "type": {
                         "const": "date_time_picker"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-date_time_picker.schema.json"
@@ -337,7 +418,10 @@
                     "type": {
                         "const": "google_map"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-google_map.schema.json"
@@ -349,7 +433,10 @@
                     "type": {
                         "const": "repeater"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-repeater.schema.json"
@@ -361,7 +448,10 @@
                     "type": {
                         "const": "group"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-group.schema.json"
@@ -373,7 +463,10 @@
                     "type": {
                         "const": "flexible_content"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-flexible_content.schema.json"
@@ -385,7 +478,10 @@
                     "type": {
                         "const": "clone"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-clone.schema.json"
@@ -397,7 +493,10 @@
                     "type": {
                         "const": "tab"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-tab.schema.json"
@@ -409,7 +508,10 @@
                     "type": {
                         "const": "accordion"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-accordion.schema.json"
@@ -421,7 +523,10 @@
                     "type": {
                         "const": "message"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-message.schema.json"
@@ -433,7 +538,10 @@
                     "type": {
                         "const": "oembed"
                     }
-                }
+                },
+                "required": [
+                    "type"
+                ]
             },
             "then": {
                 "$ref": "refs/field-oembed.schema.json"
