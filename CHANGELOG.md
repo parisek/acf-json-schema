@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `acf-lint` no longer silently ignores unknown options — a typo like `--stric` now exits 1 with an error instead of degrading the `--strict` CI gate into an always-green no-op. A missing Composer autoloader also reports an actionable message instead of a raw PHP fatal. ([#13](https://github.com/parisek/acf-json-schema/issues/13))
+- `acf-lint` no longer validates native (non-ACF) Gutenberg `block.json` files against the ACF block schema. Dispatch was purely filename-based, so a recursive scan over a theme with native blocks produced guaranteed false positives; a `block.json` without an `acf` key is now reported as skipped. ([#14](https://github.com/parisek/acf-json-schema/issues/14))
 
 ### Added
 
