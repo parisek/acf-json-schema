@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `field-item.schema.json` discriminator branches now carry `required: ["type"]` in their `if`. `properties` alone passes vacuously on a missing key, so a field without `type` matched every branch and all 36 per-type refs were enforced at once — an avalanche of confusing errors instead of the single "required properties (type) are missing". ([#15](https://github.com/parisek/acf-json-schema/issues/15))
+
 ## [0.5.0] - 2026-06-08
 
 ### Fixed
