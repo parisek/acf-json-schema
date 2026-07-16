@@ -25,7 +25,7 @@ final class JsonTest extends TestCase {
 
     public function test_accepts_stdclass_documents(): void {
         $doc = json_decode('{"title": "Škola", "modified": 1}');
-        $this->assertIsObject($doc);
+        $this->assertInstanceOf(\stdClass::class, $doc);
         $out = Json::encode($doc);
         $this->assertSame("{\n    \"title\": \"Škola\",\n    \"modified\": 1\n}\n", $out);
     }
