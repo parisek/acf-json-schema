@@ -227,6 +227,7 @@ final class AcfLinter {
     private function classifyLocationContext(array $location): ?string {
         $hasOptionsPage = false;
         $hasPostOrBlock = false;
+        $hasOther = false;
         foreach ($location as $orGroup) {
             $rules = $orGroup instanceof \stdClass ? (array) $orGroup : (is_array($orGroup) ? $orGroup : []);
             foreach ($rules as $rule) {
@@ -236,12 +237,31 @@ final class AcfLinter {
                 } elseif (is_array($rule)) {
                     $param = $rule['param'] ?? null;
                 }
+                // NOTE: `operator` (e.g. `!=`) is deliberately ignored here.
+                // `post_type != page` still targets a post_type context (all
+                // post types except `page`) — negation doesn't change WHICH
+                // context a param belongs to, only which values within that
+                // context match. If a future rule shape is found where
+                // ignoring the operator produces a wrong classification,
+                // that's a new defect to raise, not something to guess at.
                 if ($param === 'options_page') {
                     $hasOptionsPage = true;
                 } elseif ($param === 'post_type' || $param === 'block') {
                     $hasPostOrBlock = true;
+                } elseif ($param !== null) {
+                    // Any other recognized ACF `param` (taxonomy,
+                    // nav_menu_item, user_form, attachment, widget,
+                    // comment, page_template, …) — the classifier has no
+                    // demanded value for these contexts, so their presence
+                    // alongside options_page/post_type/block makes the
+                    // group's overall context ambiguous, exactly like the
+                    // options_page+post_type mixed case below.
+                    $hasOther = true;
                 }
             }
+        }
+        if ($hasOther) {
+            return null; // an unrecognized context coexists — ambiguous, don't guess
         }
         if ($hasOptionsPage && !$hasPostOrBlock) {
             return 'options_page';
