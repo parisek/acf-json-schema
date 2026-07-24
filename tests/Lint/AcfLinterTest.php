@@ -506,4 +506,56 @@ final class AcfLinterTest extends TestCase {
         self::assertFalse($r->valid);
         self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
     }
+
+    /**
+     * Regression for the 15b3ca6 fix — `$hasOther` was a single GLOBAL
+     * flag, so `post_type` AND `page_template` inside the SAME OR-group
+     * (a very common real ACF shape: a field group scoped to a post type
+     * AND a specific page template) got misclassified as ambiguous and
+     * silently skipped. `page_template` is a post-context qualifier, not
+     * a competing context — it must not blind the classifier to the
+     * `post_type` it's paired with in the same AND-group.
+     */
+    public function test_wpml_on_image_field_under_post_type_and_page_template_single_group_fails(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [
+                [
+                    ['param' => 'post_type', 'operator' => '==', 'value' => 'page'],
+                    ['param' => 'page_template', 'operator' => '==', 'value' => 'templates/homepage.php'],
+                ],
+            ],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    /**
+     * Same regression, `post_status` instead of `page_template` — another
+     * common single-group AND qualifier that must not blind the
+     * classifier to the `post_type` it's paired with.
+     */
+    public function test_wpml_on_image_field_under_post_type_and_post_status_single_group_fails(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [
+                [
+                    ['param' => 'post_type', 'operator' => '==', 'value' => 'post'],
+                    ['param' => 'post_status', 'operator' => '==', 'value' => 'publish'],
+                ],
+            ],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
 }
