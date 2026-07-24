@@ -18,6 +18,9 @@
         "max_height": { "type": ["integer", "string"] },
         "max_size":   { "type": ["integer", "string"] },
         "mime_types": { "type": "string" },
-        "wpml_cf_preferences": { "const": 1 }
+        "wpml_cf_preferences": {
+            "enum": [1, 2],
+            "description": "1 in the common post/block context (\"copy\" — non-translatable). 2 is also valid: on ACF Options Pages, ACFML permanently locks a copy-flagged (1) field to its default-language value (no post duplication to copy from), so options-page image fields are documented (tailwind-base wordpress/gutenberg.md, wordpress/wpml.md) to use 2 instead. The schema has no per-location context to enforce 1-only-outside-options-pages, so both canonical values are accepted here."
+        }
     }
 }
