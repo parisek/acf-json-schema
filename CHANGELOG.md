@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-07-25
+
 ### Added
 
 - `acf-lint --wpml` now checks `wpml_cf_preferences` VALUE by field type, not just its presence, extending the 0.7.0 location-context check with three more layers ([#30](https://github.com/parisek/acf-json-schema/issues/30)):
