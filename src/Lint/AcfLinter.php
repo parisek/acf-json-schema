@@ -106,6 +106,7 @@ final class AcfLinter {
 
         if ($requireWpml && $kind === 'acf') {
             $errors = array_merge($errors, $this->wpmlPresenceFindings($json));
+            $errors = array_merge($errors, $this->wpmlLocationValueFindings($json));
         }
 
         return new FileLintResult($path, $kind, $result->isValid() && $errors === [], $errors, $fixed, false);
@@ -162,6 +163,261 @@ final class AcfLinter {
                 foreach ($layouts as $lk => $layout) {
                     if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
                         $this->walkFieldsWpml($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $out);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * PR #29 review finding — `enum: [1, 2]` on image/gallery
+     * (field-image.schema.json / field-gallery.schema.json) is
+     * deliberately context-free: the schema has no visibility into a
+     * field's own field group's `location`, so it accepts both the
+     * common post/block value (1) and the options-page-only value (2)
+     * everywhere, unconditionally. That closed the options-page false
+     * positive but opened the inverse false negative in the far more
+     * common post/block context: an image/gallery field mistakenly
+     * authored with `wpml_cf_preferences: 2` under a `post_type`/`block`
+     * location now validates silently, and translators lose per-language
+     * image swapping on that field. This is the ONLY place in the
+     * package with both `fields` and `location` in view at once — the
+     * schema layer never sees them together — so the cross-check lives
+     * here, gated behind the same `--wpml` opt-in as the presence check
+     * above (both are WPML/ACFML-specific concerns; schema validation
+     * proper stays context-neutral per field-image.schema.json's own
+     * description).
+     *
+     * Only fires when the field group's OWN root `location` resolves
+     * unambiguously to one context (options-page-only, or
+     * post_type/block-only) — see {@see classifyLocationContext()}. A
+     * field group location an editor genuinely targets at BOTH an
+     * options page and a post type is left alone: there is no single
+     * correct value to demand without false-flagging a legitimate
+     * dual-context group.
+     *
+     * @return array<string, string> JSON-pointer => message
+     */
+    public function wpmlLocationValueFindings(object $json): array {
+        $out = [];
+        $location = $json->location ?? null;
+        if (!is_array($location)) {
+            return $out;
+        }
+        $context = $this->classifyLocationContext($location);
+        if ($context === null) {
+            return $out; // mixed or unrecognized location — ambiguous, don't guess
+        }
+
+        $fields = $json->fields ?? null;
+        if (is_array($fields)) {
+            $this->walkFieldsWpmlLocationValue($fields, '/fields', $context, $out);
+        }
+        return $out;
+    }
+
+    /**
+     * Classifies a field group's `location` (ACF's array-of-OR-groups of
+     * `{param, operator, value}` rules) into a single WPML value context,
+     * or null when the location doesn't resolve unambiguously.
+     *
+     * @param array<int|string, mixed> $location
+     * @return 'options_page'|'post_type_or_block'|null
+     */
+    /**
+     * `param` values that only ever qualify a post/page context — they
+     * narrow WHICH posts a rule matches (a specific template, status,
+     * format, category, taxonomy term, parent, or the `attachment`
+     * screen), but never compete with `post_type`/`block` for the
+     * group's context. Their presence alongside `post_type`/`block` in
+     * the SAME OR-group is the common "field group scoped to a post
+     * type AND a page template" shape — it must still resolve to
+     * `post_type_or_block`, not bail out to null. Standing alone (no
+     * `post_type`/`block` in the group) they still only ever apply to
+     * posts/pages, so they resolve to `post_type_or_block` by themselves
+     * too.
+     *
+     * `post_template` is included alongside `page_template` — same
+     * post-context-qualifier role, just the newer (any-post-type)
+     * template-selection param.
+     */
+    private const POST_CONTEXT_QUALIFIER_PARAMS = [
+        'post_template', 'post_status', 'post_format', 'post_category',
+        'post_taxonomy', 'post', 'page_template', 'page_type', 'page_parent',
+        'page', 'attachment',
+    ];
+
+    /**
+     * `param` values that never establish (or conflict with) a context
+     * by themselves — `current_user`/`current_user_role` gate WHO is
+     * looking, not WHAT is being looked at, so they coexist silently
+     * with any other param in the same group.
+     */
+    private const NEUTRAL_PARAMS = ['current_user', 'current_user_role'];
+
+    /**
+     * Classifies a single OR-group's `param`s into one of three buckets:
+     * `'options_page'`, `'post_type_or_block'`, `'other'` (a genuinely
+     * distinct, unhandled ACF context — taxonomy, user_form, user_role,
+     * user, comment, widget, nav_menu, nav_menu_item), or `null` when
+     * the group carries no context-bearing param at all (empty, or only
+     * {@see NEUTRAL_PARAMS}).
+     *
+     * A group mixing two incompatible primary contexts in one AND-group
+     * (e.g. `options_page` + `post_type` together, or either alongside
+     * an `'other'` param) has no single correct context either — that
+     * also resolves to `null` so the caller treats it as ambiguous.
+     *
+     * @param array<int|string, mixed> $rules
+     * @return 'options_page'|'post_type_or_block'|'other'|null
+     */
+    private function classifyOrGroup(array $rules): ?string {
+        $hasOptionsPage = false;
+        $hasPostOrBlock = false;
+        $hasPostContextQualifier = false;
+        $hasOther = false;
+        foreach ($rules as $rule) {
+            $param = null;
+            if ($rule instanceof \stdClass) {
+                $param = $rule->param ?? null;
+            } elseif (is_array($rule)) {
+                $param = $rule['param'] ?? null;
+            }
+            // NOTE: `operator` (e.g. `!=`) is deliberately ignored here.
+            // `post_type != page` still targets a post_type context (all
+            // post types except `page`) — negation doesn't change WHICH
+            // context a param belongs to, only which values within that
+            // context match. If a future rule shape is found where
+            // ignoring the operator produces a wrong classification,
+            // that's a new defect to raise, not something to guess at.
+            if ($param === 'options_page') {
+                $hasOptionsPage = true;
+            } elseif ($param === 'post_type' || $param === 'block') {
+                $hasPostOrBlock = true;
+            } elseif (in_array($param, self::POST_CONTEXT_QUALIFIER_PARAMS, true)) {
+                $hasPostContextQualifier = true;
+            } elseif (in_array($param, self::NEUTRAL_PARAMS, true) || $param === null) {
+                // contributes nothing either way
+            } else {
+                // taxonomy, nav_menu_item, user_form, user_role, user,
+                // comment, widget, nav_menu — a genuinely distinct
+                // context this classifier doesn't demand a value for.
+                $hasOther = true;
+            }
+        }
+        if ($hasOptionsPage && ($hasPostOrBlock || $hasPostContextQualifier || $hasOther)) {
+            return null; // options_page mixed with a competing context in one AND-group
+        }
+        if ($hasOther && ($hasPostOrBlock || $hasPostContextQualifier)) {
+            return null; // an unrecognized context mixed with post/block in one AND-group
+        }
+        if ($hasOptionsPage) {
+            return 'options_page';
+        }
+        if ($hasPostOrBlock || $hasPostContextQualifier) {
+            return 'post_type_or_block';
+        }
+        if ($hasOther) {
+            return 'other';
+        }
+        return null; // empty group, or only neutral params — no context info
+    }
+
+    /**
+     * Classifies a field group's `location` (ACF's array-of-OR-groups of
+     * `{param, operator, value}` rules) into a single WPML value context,
+     * or null when the location doesn't resolve unambiguously.
+     *
+     * Classification runs per OR-group ({@see classifyOrGroup()}) so
+     * that `post_type` AND `page_template` inside the SAME group (a
+     * common real ACF shape) doesn't get conflated with two SEPARATE
+     * OR-groups genuinely targeting different contexts (`options_page`
+     * OR `taxonomy`). Groups that resolve to `'other'`, or resolved
+     * groups that disagree with each other (`options_page` OR
+     * `post_type` across two groups), leave the whole location
+     * ambiguous — a field group an editor genuinely targets at BOTH an
+     * options page and a post type (or at a context this classifier
+     * doesn't recognize) is left alone: there is no single correct value
+     * to demand without false-flagging a legitimate dual-context group.
+     *
+     * @param array<int|string, mixed> $location
+     * @return 'options_page'|'post_type_or_block'|null
+     */
+    private function classifyLocationContext(array $location): ?string {
+        $sawOptionsPage = false;
+        $sawPostOrBlock = false;
+        foreach ($location as $orGroup) {
+            $rules = $orGroup instanceof \stdClass ? (array) $orGroup : (is_array($orGroup) ? $orGroup : []);
+            $groupContext = $this->classifyOrGroup($rules);
+            if ($groupContext === 'other') {
+                return null; // a genuinely distinct, unhandled context — ambiguous
+            }
+            if ($groupContext === 'options_page') {
+                $sawOptionsPage = true;
+            } elseif ($groupContext === 'post_type_or_block') {
+                $sawPostOrBlock = true;
+            }
+            // null ($groupContext) — no context info from this group, doesn't affect the verdict
+        }
+        if ($sawOptionsPage && $sawPostOrBlock) {
+            return null; // two groups disagree — genuinely dual-context, ambiguous
+        }
+        if ($sawOptionsPage) {
+            return 'options_page';
+        }
+        if ($sawPostOrBlock) {
+            return 'post_type_or_block';
+        }
+        return null; // no group carried any context info
+    }
+
+    /**
+     * Recurse fields + nested sub_fields + flexible-content layouts (same
+     * shape as {@see walkFieldsWpml()}), flagging any `image`/`gallery`
+     * field whose `wpml_cf_preferences` doesn't match the ONE value valid
+     * for $context. Non-image/gallery field types are untouched here —
+     * their `wpml_cf_preferences` enum (`[0, 1, 2, 3]` in
+     * field.schema.json) is already context-free by design, only
+     * image/gallery narrowed to `[1, 2]` for the options-page carve-out
+     * this check exists to make precise.
+     *
+     * @param array<int|string, mixed> $fields
+     * @param 'options_page'|'post_type_or_block' $context
+     * @param array<string, string> $out
+     */
+    private function walkFieldsWpmlLocationValue(array $fields, string $base, string $context, array &$out): void {
+        $required = $context === 'options_page' ? 2 : 1;
+
+        foreach ($fields as $i => $field) {
+            if (!$field instanceof \stdClass) {
+                continue;
+            }
+            $ptr = $base . '/' . $i;
+            $type = is_string($field->type ?? null) ? $field->type : '';
+            $pref = $field->wpml_cf_preferences ?? null;
+            if (in_array($type, ['image', 'gallery'], true) && is_int($pref) && $pref !== $required) {
+                $out[$ptr . '/wpml_cf_preferences'] = sprintf(
+                    'required by --wpml: %s under a %s location must be %d (got %d) — %s',
+                    $type,
+                    $context === 'options_page' ? 'options_page' : 'post_type/block',
+                    $required,
+                    $pref,
+                    $context === 'options_page'
+                        ? 'ACFML locks a copy-flagged (1) field to its default-language value on Options Pages'
+                        : 'value 2 is the options-page-only carve-out and disables per-language translation here',
+                );
+            }
+            if (isset($field->sub_fields) && is_array($field->sub_fields)) {
+                $this->walkFieldsWpmlLocationValue($field->sub_fields, $ptr . '/sub_fields', $context, $out);
+            }
+            $layouts = $field->layouts ?? null;
+            if ($layouts instanceof \stdClass) {
+                $layouts = (array) $layouts;
+            }
+            if (is_array($layouts)) {
+                foreach ($layouts as $lk => $layout) {
+                    if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
+                        $this->walkFieldsWpmlLocationValue($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $context, $out);
                     }
                 }
             }

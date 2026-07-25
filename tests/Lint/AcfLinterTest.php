@@ -265,6 +265,144 @@ final class AcfLinterTest extends TestCase {
         }
     }
 
+    /**
+     * PR #29 review finding — `enum: [1, 2]` on image/gallery fixed the
+     * options-page false positive but opened a false negative in the FAR
+     * more common post/block context: an image field mistakenly set to
+     * `wpml_cf_preferences: 2` (the options-page-only value) now
+     * validates silently under a `post_type` location, and translators
+     * lose per-language image swapping. Nothing in the schema (which is
+     * deliberately context-free — see field-image.schema.json's own
+     * description) catches this; it must be the --wpml linter's job,
+     * since only the linter sees `location` alongside `fields`.
+     */
+    public function test_wpml_on_image_field_with_options_page_value_under_post_type_location_fails(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    /**
+     * Sanity control — the canonical value for a post/block-context image
+     * field (1) must keep passing; the new check must not be over-broad.
+     */
+    public function test_wpml_on_image_field_with_post_type_value_under_post_type_location_passes(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 1,
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
+     * Same false-negative class, gallery field, `block` location instead
+     * of `post_type` — the "more common" context isn't limited to CPTs.
+     */
+    public function test_wpml_on_gallery_field_with_options_page_value_under_block_location_fails(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'block', 'operator' => '==', 'value' => 'acf/hero']]],
+        ], [
+            [
+                'key' => 'field_gal', 'label' => 'Gal', 'name' => 'gal', 'type' => 'gallery',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    /**
+     * The documented, legitimate options-page case must keep passing —
+     * this is the false positive PR #29 already fixed; the new
+     * location-aware check must not regress it.
+     */
+    public function test_wpml_on_image_field_with_options_page_value_under_options_page_location_passes(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'options_page', 'operator' => '==', 'value' => 'options_social']]],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
+     * Inverse of the options-page case — value 1 (the post/block-context
+     * value) under an options_page-only location is the mirror-image
+     * mistake (ACFML permanently locks it to the default-language value
+     * with no post to copy from), so it's flagged too, for the same
+     * reason the forward direction is.
+     */
+    public function test_wpml_on_image_field_with_post_type_value_under_options_page_location_fails(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'options_page', 'operator' => '==', 'value' => 'options_social']]],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 1,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    /**
+     * Mixed location (an OR-group targeting BOTH an options page and a
+     * post type) is genuinely ambiguous — there is no single "correct"
+     * value the linter can demand without false-flagging a legitimate
+     * dual-context field group. Must NOT be flagged either way.
+     */
+    public function test_wpml_on_image_field_under_mixed_location_is_not_flagged_for_value(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [
+                [['param' => 'post_type', 'operator' => '==', 'value' => 'post']],
+                [['param' => 'options_page', 'operator' => '==', 'value' => 'options_social']],
+            ],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
+     * Nested image field (inside a repeater) must be checked against the
+     * FIELD GROUP's own root location, not skipped just because it's not
+     * top-level — the bug class applies equally to a repeater's gallery
+     * sub-field.
+     */
+    public function test_wpml_on_nested_image_field_in_repeater_is_checked_against_root_location(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3,
+                'sub_fields' => [
+                    [
+                        'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                        'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+                    ],
+                ],
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/sub_fields/0/wpml_cf_preferences', $r->errors);
+    }
+
     public function test_whole_valid_corpus_lints_clean(): void {
         $root = __DIR__ . '/../fixtures/valid';
         $files = $this->linter->collectJsonFiles([$root]);
@@ -276,5 +414,148 @@ final class AcfLinterTest extends TestCase {
             }
         }
         self::assertSame([], $failures, "Valid corpus must lint clean:\n" . implode("\n", $failures));
+    }
+
+    /**
+     * classifyLocationContext() regression — a heterogeneous OR group
+     * mixing `options_page` with an UNRECOGNIZED param (`taxonomy`) was
+     * misclassified as pure `options_page` context, because the
+     * classifier only tracks `options_page` vs `post_type`/`block` and
+     * is blind to every other ACF `param` (`taxonomy`, `nav_menu_item`,
+     * `user_form`, `attachment`, `widget`, `comment`, `page_template`,
+     * …). Per the method's own documented policy — a group genuinely
+     * targeting BOTH an options page and a post type is left alone,
+     * because there is no single correct value to demand — the same
+     * must hold for `options_page` + `taxonomy`: no single correct
+     * value, so the check must NOT fire.
+     */
+    public function test_wpml_on_image_field_under_options_page_or_taxonomy_location_is_not_flagged_for_value(): void {
+        // Value 1 is deliberate — before the fix, the classifier saw
+        // `options_page` and ignored the unrecognized `taxonomy` param,
+        // collapsed to pure `options_page` context, and demanded value 2
+        // — wrongly flagging this legitimate dual-context field group.
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [
+                [['param' => 'options_page', 'operator' => '==', 'value' => 'options_social']],
+                [['param' => 'taxonomy', 'operator' => '==', 'value' => 'category']],
+            ],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 1,
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
+     * Same ambiguity, mirrored on the post_type/block side — an
+     * unrecognized param (`user_form`) alongside `post_type` must also
+     * be left alone, not silently classified as pure `post_type_or_block`.
+     */
+    public function test_wpml_on_image_field_under_post_type_or_user_form_location_is_not_flagged_for_value(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [
+                [['param' => 'post_type', 'operator' => '==', 'value' => 'post']],
+                [['param' => 'user_form', 'operator' => '==', 'value' => 'all']],
+            ],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
+     * Passing-control — pure `options_page` location (no other params
+     * at all) must still flag value 1 as wrong. Proves the fix isn't a
+     * blanket silencer that stops single-context detection from working.
+     */
+    public function test_wpml_on_image_field_with_post_type_value_under_pure_options_page_location_fails(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'options_page', 'operator' => '==', 'value' => 'options_social']]],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 1,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    /**
+     * Passing-control — pure `block` location must still flag value 2 as
+     * wrong. Same rationale as above, mirrored on the post/block side.
+     */
+    public function test_wpml_on_image_field_with_options_page_value_under_pure_block_location_fails(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'block', 'operator' => '==', 'value' => 'acf/hero']]],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    /**
+     * Regression for the 15b3ca6 fix — `$hasOther` was a single GLOBAL
+     * flag, so `post_type` AND `page_template` inside the SAME OR-group
+     * (a very common real ACF shape: a field group scoped to a post type
+     * AND a specific page template) got misclassified as ambiguous and
+     * silently skipped. `page_template` is a post-context qualifier, not
+     * a competing context — it must not blind the classifier to the
+     * `post_type` it's paired with in the same AND-group.
+     */
+    public function test_wpml_on_image_field_under_post_type_and_page_template_single_group_fails(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [
+                [
+                    ['param' => 'post_type', 'operator' => '==', 'value' => 'page'],
+                    ['param' => 'page_template', 'operator' => '==', 'value' => 'templates/homepage.php'],
+                ],
+            ],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    /**
+     * Same regression, `post_status` instead of `page_template` — another
+     * common single-group AND qualifier that must not blind the
+     * classifier to the `post_type` it's paired with.
+     */
+    public function test_wpml_on_image_field_under_post_type_and_post_status_single_group_fails(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [
+                [
+                    ['param' => 'post_type', 'operator' => '==', 'value' => 'post'],
+                    ['param' => 'post_status', 'operator' => '==', 'value' => 'publish'],
+                ],
+            ],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
     }
 }

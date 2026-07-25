@@ -171,6 +171,30 @@ final class ValidatorTest extends TestCase {
         $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
     }
 
+    /**
+     * Options-page house rule (documented identically in tailwind-base's
+     * wordpress/gutenberg.md § Key Requirements and wordpress/wpml.md's
+     * gotcha table): `wpml_cf_preferences: 1` ("copy") assumes
+     * post-duplication, which ACF Options Pages never do — ACFML instead
+     * permanently locks a `1`-flagged field to its default-language value
+     * on an options page. Doctrine says every value field on an options
+     * page gets `2`, including image/gallery. The schema's `const: 1` for
+     * image predates that finding and unconditionally rejects the one
+     * value real WPML options-page exports need.
+     */
+    public function test_image_field_wpml_translatable_on_options_page_passes(): void {
+        $field = (object) [
+            'return_format' => 'array',
+            'preview_size' => 'medium',
+            'wpml_cf_preferences' => 2
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-image.schema.json',
+            $field
+        );
+        $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
+    }
+
     public function test_link_field_return_format_array_passes(): void {
         $result = $this->validator->validate(
             'https://schemas.parisek.dev/acf/refs/field-link.schema.json',
@@ -216,6 +240,18 @@ final class ValidatorTest extends TestCase {
             $field
         );
         $this->assertFalse($result->isValid(), 'gallery must require return_format const "array"');
+    }
+
+    public function test_gallery_field_wpml_translatable_on_options_page_passes(): void {
+        $field = (object) [
+            'return_format' => 'array',
+            'wpml_cf_preferences' => 2
+        ];
+        $result = $this->validator->validate(
+            'https://schemas.parisek.dev/acf/refs/field-gallery.schema.json',
+            $field
+        );
+        $this->assertTrue($result->isValid(), 'errors: ' . json_encode($this->validator->formatErrors($result)));
     }
 
     public function test_flexible_content_with_layouts_passes(): void {

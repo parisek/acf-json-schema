@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `field-image.schema.json` / `field-gallery.schema.json` no longer reject `wpml_cf_preferences: 2` on image/gallery fields. The schemas were curated against a live install in a `post_type`/`block` location context, where `1` ("copy") is correct — but on an ACF Options Page, ACFML permanently locks a `1`-flagged field to its default-language value (there's no post duplication to copy from), so `tailwind-base`'s `wordpress/gutenberg.md` and `wordpress/wpml.md` both document `2` for every value field on an options page, image/gallery included. Static per-type refs carry no location context to conditionally enforce `1`-only-outside-options-pages, so both canonical values are now accepted unconditionally on these two refs (matching how `field-link`/`field-select`/`field-url` already fall through to the general `field.schema.json` `enum: [0,1,2,3]` with no per-type override).
+
+- `--wpml` location classification no longer misreads field groups whose `location` mixes object types. It tracked only `options_page` versus `post_type`/`block`, so every other ACF `param` was invisible and a group located at `options_page OR taxonomy` collapsed to a pure options-page context — demanding the options-page value from fields that also render on a term screen, contradicting the classifier's own documented policy of leaving genuinely dual-context groups alone.
+- `--wpml` location classification now runs per OR-group instead of through one global flag, which could not distinguish two AND-rules inside one OR-group from two separate OR-groups. That silenced `post_type AND page_template` — among the most common real ACF shapes — trading a false positive on a rare shape for a false negative on a common one. All 24 params from `location-rule.schema.json` are now assigned deliberately: `post_type`/`block` and `options_page` as primary contexts; `page_template`, `post_template`, `post_status`, `post_format`, `post_category`, `post_taxonomy`, `post`, `page_type`, `page_parent`, `page` and `attachment` as post-context qualifiers; `current_user`/`current_user_role` as neutral; the remainder as distinct contexts that force ambiguity when mixed. Note this also newly activates **standalone qualifier groups** — a group located solely at e.g. `page_template == x.php`, with no `post_type`, previously resolved to ambiguous and was skipped, and is now checked. The `operator` is deliberately ignored: `post_type != page` is still a post-type context, so negation does not change the demanded value.
+
+### Added
+
+- `acf-lint --wpml` now cross-checks a field's `wpml_cf_preferences` against its field group's ACF `location`, not just its presence. The `enum: [1, 2]` widening above fixed an options-page false positive but opened a false negative in the far more common post/block context: an image/gallery field mistakenly set to `2` validated silently there, and translators lose per-language image swapping. `AcfLinter` is the only place with both `fields` and `location` in view at once, so the check lives there and the schemas stay context-neutral by design.
+
 ## [0.6.0] - 2026-07-16
 
 ### Fixed
