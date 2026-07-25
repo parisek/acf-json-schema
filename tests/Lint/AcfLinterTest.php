@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Parisek\AcfJsonSchema\Tests\Lint;
 
 use Parisek\AcfJsonSchema\Lint\AcfLinter;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class AcfLinterTest extends TestCase {
@@ -557,5 +558,243 @@ final class AcfLinterTest extends TestCase {
         ]), true);
         self::assertFalse($r->valid);
         self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    // ---------------------------------------------------------------
+    // Issue #30 — type -> value check (Layers 1-3)
+    // ---------------------------------------------------------------
+
+    /**
+     * Layer 1 — `repeater` / `flexible_content` are forcibly overridden to
+     * `3` at runtime by ACFML (`Helper\Fields::WRAPPER_FIELDS` +
+     * `field_should_be_set_to_copy_once()`). Any other configured value is
+     * provably dead. Value `3` must stay silent.
+     */
+    public function test_wpml_repeater_with_value_3_passes(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3,
+                'sub_fields' => [],
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /** @return iterable<string, array{0: int|null}> */
+    public static function wrongRepeaterValues(): iterable {
+        yield 'zero' => [0];
+        yield 'one' => [1];
+        yield 'two' => [2];
+        yield 'absent' => [null];
+    }
+
+    /**
+     */
+    #[DataProvider('wrongRepeaterValues')]
+    public function test_wpml_repeater_with_wrong_value_fails(?int $value): void {
+        $field = [
+            'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater',
+            'allow_in_bindings' => 0, 'sub_fields' => [],
+        ];
+        if ($value !== null) {
+            $field['wpml_cf_preferences'] = $value;
+        }
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [$field]), true);
+        self::assertFalse($r->valid, "value " . var_export($value, true) . " must be flagged for repeater");
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+        self::assertStringContainsString('ACFML', $r->errors['/fields/0/wpml_cf_preferences']);
+    }
+
+    /**
+     */
+    #[DataProvider('wrongRepeaterValues')]
+    public function test_wpml_flexible_content_with_wrong_value_fails(?int $value): void {
+        $field = [
+            'key' => 'field_fc', 'label' => 'FC', 'name' => 'fc', 'type' => 'flexible_content',
+            'allow_in_bindings' => 0, 'layouts' => [],
+        ];
+        if ($value !== null) {
+            $field['wpml_cf_preferences'] = $value;
+        }
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [$field]), true);
+        self::assertFalse($r->valid, "value " . var_export($value, true) . " must be flagged for flexible_content");
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    public function test_wpml_flexible_content_with_value_3_passes(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_fc', 'label' => 'FC', 'name' => 'fc', 'type' => 'flexible_content',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3, 'layouts' => [],
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
+     * Layer 3 — UI pseudo-fields (`accordion`, `tab`, `message`) hold no
+     * translatable value. `1` must be flagged.
+     */
+    public function test_wpml_accordion_with_value_1_fails(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_acc', 'label' => 'Acc', 'name' => 'acc', 'type' => 'accordion', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    public function test_wpml_tab_with_value_1_fails(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_tab', 'label' => 'Tab', 'name' => 'tab', 'type' => 'tab', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    public function test_wpml_message_with_value_1_fails(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_msg', 'label' => 'Msg', 'name' => 'msg', 'type' => 'message', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    public function test_wpml_accordion_with_value_0_passes(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_acc', 'label' => 'Acc', 'name' => 'acc', 'type' => 'accordion', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 0],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    public function test_wpml_accordion_absent_passes(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_acc', 'label' => 'Acc', 'name' => 'acc', 'type' => 'accordion', 'allow_in_bindings' => 0],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
+     * Layer 2 — `group` should carry `3` per this project's own doctrine
+     * (gutenberg.md: "`3` only on group containers whose nested leaves
+     * carry their own preference"). ACFML does NOT force this — softer
+     * certainty than layer 1, worded distinctly in the message.
+     */
+    public function test_wpml_group_with_value_3_passes(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_g', 'label' => 'G', 'name' => 'g', 'type' => 'group',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3,
+                'sub_fields' => [
+                    ['key' => 'field_gs', 'label' => 'GS', 'name' => 'gs', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+                ],
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /** @return iterable<string, array{0: int|null}> */
+    public static function wrongGroupValues(): iterable {
+        yield 'zero' => [0];
+        yield 'one' => [1];
+        yield 'two' => [2];
+        yield 'absent' => [null];
+    }
+
+    /**
+     */
+    #[DataProvider('wrongGroupValues')]
+    public function test_wpml_group_with_wrong_value_fails(?int $value): void {
+        $field = [
+            'key' => 'field_g', 'label' => 'G', 'name' => 'g', 'type' => 'group',
+            'allow_in_bindings' => 0,
+            'sub_fields' => [
+                ['key' => 'field_gs', 'label' => 'GS', 'name' => 'gs', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+            ],
+        ];
+        if ($value !== null) {
+            $field['wpml_cf_preferences'] = $value;
+        }
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [$field]), true);
+        self::assertFalse($r->valid, "value " . var_export($value, true) . " must be flagged for group");
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+        // Layer 2 message must read as project doctrine, not plugin fact.
+        self::assertStringContainsString('doctrine', $r->errors['/fields/0/wpml_cf_preferences']);
+    }
+
+    /**
+     * Layer 4 (OUT OF SCOPE) — leaf value types keep ONLY the pre-existing
+     * presence check. Neither `1` nor `2` may produce a NEW finding.
+     */
+    public function test_wpml_leaf_text_field_with_value_1_stays_silent(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    public function test_wpml_leaf_text_field_with_value_2_stays_silent(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
+     * No double-reporting — an `image` field under an ambiguous (mixed)
+     * location that would ALSO be a bad value for one of the new type
+     * buckets can never happen because `image` never belongs to those
+     * buckets (type-bucketed, mutually exclusive by construction). This
+     * proves an image field flagged by the existing location-value check
+     * gets exactly ONE finding, not two.
+     */
+    public function test_wpml_image_field_gets_single_finding_not_double_reported(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'post_type', 'operator' => '==', 'value' => 'post']]],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 2,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        // Exactly one finding for the whole field group.
+        self::assertCount(1, $r->errors);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    /**
+     * Nested coverage — a wrong-valued `repeater` nested inside a `group`
+     * nested inside a `flexible_content` layout must still be found by the
+     * walker (same recursive shape as the pre-existing presence check).
+     */
+    public function test_wpml_type_value_check_recurses_through_flexible_content_group_repeater(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_fc', 'label' => 'FC', 'name' => 'fc', 'type' => 'flexible_content',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3,
+                'layouts' => [
+                    'layout_a' => [
+                        'key' => 'layout_a', 'name' => 'layout_a', 'label' => 'Layout A',
+                        'sub_fields' => [
+                            [
+                                'key' => 'field_g', 'label' => 'G', 'name' => 'g', 'type' => 'group',
+                                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3,
+                                'sub_fields' => [
+                                    [
+                                        'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater',
+                                        'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1,
+                                        'sub_fields' => [],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/layouts/layout_a/sub_fields/0/sub_fields/0/wpml_cf_preferences', $r->errors);
     }
 }

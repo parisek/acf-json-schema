@@ -107,6 +107,7 @@ final class AcfLinter {
         if ($requireWpml && $kind === 'acf') {
             $errors = array_merge($errors, $this->wpmlPresenceFindings($json));
             $errors = array_merge($errors, $this->wpmlLocationValueFindings($json));
+            $errors = array_merge($errors, $this->wpmlTypeValueFindings($json));
         }
 
         return new FileLintResult($path, $kind, $result->isValid() && $errors === [], $errors, $fixed, false);
@@ -163,6 +164,118 @@ final class AcfLinter {
                 foreach ($layouts as $lk => $layout) {
                     if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
                         $this->walkFieldsWpml($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $out);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Issue #30 — type -> value check (Layers 1-3 of the layered proposal;
+     * Layer 4, leaf value types, is deliberately OUT of scope and untouched
+     * here — the existing presence check + the image/gallery location-value
+     * check above are the only leaf-type checks).
+     *
+     * Bucketing is purely by `$field['type']`, and the four buckets below
+     * (`repeater`/`flexible_content`, `group`, `accordion`/`tab`/`message`)
+     * are pairwise disjoint AND disjoint from `image`/`gallery` (the types
+     * {@see walkFieldsWpmlLocationValue()} covers) — a field can never be
+     * flagged by two of these checks at once, so there is no double-report
+     * risk to guard against structurally.
+     *
+     * Layer 1 — `repeater` / `flexible_content` MUST be `3`. This is a
+     * plugin FACT, not doctrine: ACFML forcibly overrides these two types
+     * to `WPML_COPY_ONCE_CUSTOM_FIELD` (`= 3`, defined in
+     * sitepress-multilingual-cms/inc/constants.php) at runtime regardless
+     * of the configured value — see `ACFML\Helper\Fields::WRAPPER_FIELDS`
+     * (acfml/classes/Helper/Fields.php:10) and
+     * `WPML_ACF_Field_Settings::field_should_be_set_to_copy_once()`
+     * (acfml/classes/class-wpml-acf-field-settings.php:335-341). Any other
+     * configured value is provably dead configuration.
+     *
+     * Layer 2 — `group` SHOULD be `3` per this project's own doctrine
+     * (gutenberg.md § Key Requirements: "`3` only on group containers
+     * whose nested leaves carry their own preference"). ACFML does NOT
+     * force this one — it's a project convention, not a plugin fact, so
+     * the message is worded as doctrine rather than plugin behaviour. No
+     * separate severity mechanism exists in this linter yet (checked —
+     * neither a warning/error level nor an opt-in-flag concept is present
+     * anywhere in src/), so this stays inside the same `--wpml` findings
+     * list with a message that reads unmistakably as project-convention,
+     * not plugin fact — the lightest correct option instead of inventing
+     * a new severity subsystem for one rule.
+     *
+     * Layer 3 — `accordion` / `tab` / `message` are ACF UI/layout
+     * pseudo-fields holding no translatable value; only `0` or absent are
+     * sensible (mirrors the existing valueless-type presence exemption).
+     *
+     * @return array<string, string> JSON-pointer => message
+     */
+    public function wpmlTypeValueFindings(object $json): array {
+        $out = [];
+        $fields = $json->fields ?? null;
+        if (is_array($fields)) {
+            $this->walkFieldsWpmlTypeValue($fields, '/fields', $out);
+        }
+        return $out;
+    }
+
+    /**
+     * Recurse fields + nested sub_fields (repeater/group) + flexible-content
+     * layouts — same walker shape as {@see walkFieldsWpml()} — checking
+     * type-bucketed value correctness per {@see wpmlTypeValueFindings()}.
+     *
+     * @param array<int|string, mixed> $fields
+     * @param array<string, string>    $out
+     */
+    private function walkFieldsWpmlTypeValue(array $fields, string $base, array &$out): void {
+        $pluginForced = ['repeater', 'flexible_content'];
+        $uiPseudoFields = ['accordion', 'tab', 'message'];
+
+        foreach ($fields as $i => $field) {
+            if (!$field instanceof \stdClass) {
+                continue;
+            }
+            $ptr = $base . '/' . $i;
+            $type = is_string($field->type ?? null) ? $field->type : '';
+            $pref = $field->wpml_cf_preferences ?? null;
+
+            if (in_array($type, $pluginForced, true) && $pref !== 3) {
+                $out[$ptr . '/wpml_cf_preferences'] = sprintf(
+                    'required by --wpml: %s is forcibly overridden to 3 by ACFML at runtime '
+                        . '(ACFML\\Helper\\Fields::WRAPPER_FIELDS, class-wpml-acf-field-settings.php '
+                        . 'field_should_be_set_to_copy_once(), WPML_COPY_ONCE_CUSTOM_FIELD = 3) — any other '
+                        . 'configured value (got %s) is dead configuration',
+                    $type,
+                    $pref === null ? 'absent' : var_export($pref, true),
+                );
+            } elseif ($type === 'group' && $pref !== 3) {
+                $out[$ptr . '/wpml_cf_preferences'] = sprintf(
+                    'required by --wpml (doctrine, not a plugin fact): group containers should be 3 per '
+                        . 'gutenberg.md § Key Requirements ("3 only on group containers whose nested leaves '
+                        . 'carry their own preference") — got %s',
+                    $pref === null ? 'absent' : var_export($pref, true),
+                );
+            } elseif (in_array($type, $uiPseudoFields, true) && $pref !== null && $pref !== 0) {
+                $out[$ptr . '/wpml_cf_preferences'] = sprintf(
+                    'required by --wpml: %s is an ACF UI/layout pseudo-field with no translatable value — '
+                        . 'only 0 or absent is valid (got %s)',
+                    $type,
+                    var_export($pref, true),
+                );
+            }
+
+            if (isset($field->sub_fields) && is_array($field->sub_fields)) {
+                $this->walkFieldsWpmlTypeValue($field->sub_fields, $ptr . '/sub_fields', $out);
+            }
+            $layouts = $field->layouts ?? null;
+            if ($layouts instanceof \stdClass) {
+                $layouts = (array) $layouts;
+            }
+            if (is_array($layouts)) {
+                foreach ($layouts as $lk => $layout) {
+                    if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
+                        $this->walkFieldsWpmlTypeValue($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $out);
                     }
                 }
             }
