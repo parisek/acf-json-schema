@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-25
+
 ### Fixed
 
 - `field-image.schema.json` / `field-gallery.schema.json` no longer reject `wpml_cf_preferences: 2` on image/gallery fields. The schemas were curated against a live install in a `post_type`/`block` location context, where `1` ("copy") is correct — but on an ACF Options Page, ACFML permanently locks a `1`-flagged field to its default-language value (there's no post duplication to copy from), so `tailwind-base`'s `wordpress/gutenberg.md` and `wordpress/wpml.md` both document `2` for every value field on an options page, image/gallery included. Static per-type refs carry no location context to conditionally enforce `1`-only-outside-options-pages, so both canonical values are now accepted unconditionally on these two refs (matching how `field-link`/`field-select`/`field-url` already fall through to the general `field.schema.json` `enum: [0,1,2,3]` with no per-type override).
