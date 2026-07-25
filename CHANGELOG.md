@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `acf-lint --wpml` now checks `wpml_cf_preferences` VALUE by field type, not just its presence, extending the 0.7.0 location-context check with three more layers ([#30](https://github.com/parisek/acf-json-schema/issues/30)):
+  - **`repeater` / `flexible_content` must be `3`.** This is a plugin fact, not doctrine: ACFML forcibly overrides both types to `3` (`WPML_COPY_ONCE_CUSTOM_FIELD`) at runtime regardless of the configured value — authority is `ACFML\Helper\Fields::WRAPPER_FIELDS` and `WPML_ACF_Field_Settings::field_should_be_set_to_copy_once()`. Any other configured value is provably dead configuration.
+  - **`group` should be `3`.** Realized in the *same* `--wpml` findings list as the plugin-forced check above (the linter has no severity/warning-level concept to reuse, and adding one for a single rule would be over-engineering) — the softer certainty is conveyed entirely through message wording: this check's message explicitly reads "(doctrine, not a plugin fact)" and cites `gutenberg.md` § Key Requirements, vs. the plugin-forced check's message which cites the ACFML source files as authority.
+  - **`accordion` / `tab` / `message` must be `0` or absent.** These are ACF UI/layout pseudo-fields holding no translatable value; any other configured value is meaningless.
+  - Leaf value types (text, wysiwyg, image, link, select, url, …) are unchanged — they keep only the pre-existing presence check; the 1-vs-2 split there is genuine author intent this linter still does not second-guess (Layer 4 of the issue's proposal, deliberately out of scope).
+
+  **⚠️ Existing projects will very likely surface brand-new findings that did not exist before** — a fleet census across 1769 `acf.json` files found ~837 `repeater`/`flexible_content` fields already configured with a value the plugin discards at runtime. This is intentional and expected, not a regression: those findings were always true (the plugin has always overridden the value), the linter simply couldn't see it until now.
+
 ## [0.7.0] - 2026-07-25
 
 ### Fixed
