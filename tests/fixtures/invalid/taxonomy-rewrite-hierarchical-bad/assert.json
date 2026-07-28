@@ -1,0 +1,6 @@
+{
+    "description": "rewrite_hierarchical is taxonomy-only, so the CPT fixtures never reach it. It was relaxed by the same change as the other three flags and needs its own negative case.",
+    "schema": "https://schemas.parisek.dev/acf/taxonomy.schema.json",
+    "data_path": "/rewrite/rewrite_hierarchical",
+    "min_violations": 1
+}

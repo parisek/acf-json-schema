@@ -1,0 +1,14 @@
+{
+    "key": "taxonomy_blog_categories",
+    "title": "Blog categories",
+    "taxonomy": "blog_categories",
+    "object_type": [
+        "blog"
+    ],
+    "active": true,
+    "rewrite": {
+        "permalink_rewrite": "custom_permalink",
+        "slug": "blog/kategorie",
+        "rewrite_hierarchical": "yes"
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "description": "An integer must be rejected. ACF writes either a real boolean or the string \"0\"/\"1\"; a bare 1/2 is neither, and accepting it would let a truthy-cast typo through.",
+    "schema": "https://schemas.parisek.dev/acf/cpt.schema.json",
+    "data_path": "/rewrite/pages",
+    "min_violations": 1
+}

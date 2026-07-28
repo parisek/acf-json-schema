@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `refs/permalink-rewrite.schema.json` now accepts both encodings of the four boolean rewrite flags (`with_front`, `feeds`, `pages`, `rewrite_hierarchical`). They were pinned to the string enum `"0"`/`"1"`, which rejected ACF Pro's own native export: `acf_prepare_internal_post_type_for_export()` emits real JSON booleans for values coming from ACF's defaults, and the string form only for values coming from the Admin Sync form. Both round-trip — ACF's consumer casts with `(bool)` — so pinning either one alone made `acf-lint` fail on files ACF itself had just written ([#32](https://github.com/parisek/acf-json-schema/pull/32)).
+
+### Added
+
+- Fixture coverage for the rewrite flags in both encodings, including the first taxonomy fixtures in the suite — `rewrite_hierarchical` is taxonomy-only and had no coverage at all.
+
 ## [0.7.1] - 2026-07-25
 
 ### Added
