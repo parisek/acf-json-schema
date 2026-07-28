@@ -1,35 +1,82 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://schemas.parisek.dev/acf/refs/permalink-rewrite.schema.json",
-    "title": "ACF CPT / Taxonomy permalink rewrite",
-    "description": "Permalink rewrite configuration for ACF CPT and Taxonomy JSON. Numeric flags (with_front, feeds, pages) are STRING-ENCODED (\"0\"/\"1\") because ACF Pro's Admin Sync UI serialises booleans as strings — modelling them as booleans here would break round-trip.",
-    "type": "object",
-    "required": ["permalink_rewrite"],
-    "properties": {
-        "permalink_rewrite": {
-            "description": "Rewrite strategy. no_permalink = no rewrite; post_type_key / taxonomy_key = use the post-type / taxonomy key as the slug (WP default); custom_permalink = use the `slug` field below. ACF uses post_type_key for CPTs and taxonomy_key for taxonomies.",
-            "enum": ["no_permalink", "post_type_key", "taxonomy_key", "custom_permalink"]
-        },
-        "slug": {
-            "description": "The URL prefix when permalink_rewrite is custom_permalink. ACF appends /%postname%/ automatically — do not include it here.",
-            "type": "string"
-        },
-        "with_front": {
-            "description": "String-encoded boolean. ACF Pro serialises as '0' or '1'.",
-            "enum": ["0", "1"]
-        },
-        "feeds": {
-            "description": "String-encoded boolean.",
-            "enum": ["0", "1"]
-        },
-        "pages": {
-            "description": "String-encoded boolean.",
-            "enum": ["0", "1"]
-        },
-        "rewrite_hierarchical": {
-            "description": "String-encoded boolean — taxonomy rewrite option (ACF taxonomy JSON).",
-            "enum": ["0", "1"]
-        }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.parisek.dev/acf/refs/permalink-rewrite.schema.json",
+  "title": "ACF CPT / Taxonomy permalink rewrite",
+  "description": "Permalink rewrite configuration for ACF CPT and Taxonomy JSON. Numeric flags (with_front, feeds, pages) are STRING-ENCODED (\"0\"/\"1\") because ACF Pro's Admin Sync UI serialises booleans as strings — modelling them as booleans here would break round-trip.",
+  "type": "object",
+  "required": [
+    "permalink_rewrite"
+  ],
+  "properties": {
+    "permalink_rewrite": {
+      "description": "Rewrite strategy. no_permalink = no rewrite; post_type_key / taxonomy_key = use the post-type / taxonomy key as the slug (WP default); custom_permalink = use the `slug` field below. ACF uses post_type_key for CPTs and taxonomy_key for taxonomies.",
+      "enum": [
+        "no_permalink",
+        "post_type_key",
+        "taxonomy_key",
+        "custom_permalink"
+      ]
     },
-    "additionalProperties": false
+    "slug": {
+      "description": "The URL prefix when permalink_rewrite is custom_permalink. ACF appends /%postname%/ automatically — do not include it here.",
+      "type": "string"
+    },
+    "with_front": {
+      "description": "Boolean, in either encoding. ACF Pro writes a real boolean when the value comes from its own defaults (class-acf-post-type.php) and the string \"0\"/\"1\" when it comes from the admin form; its consumer casts with (bool), so both are valid input.",
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "enum": [
+            "0",
+            "1"
+          ]
+        }
+      ]
+    },
+    "feeds": {
+      "description": "Boolean, in either encoding — see with_front.",
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "enum": [
+            "0",
+            "1"
+          ]
+        }
+      ]
+    },
+    "pages": {
+      "description": "Boolean, in either encoding — see with_front.",
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "enum": [
+            "0",
+            "1"
+          ]
+        }
+      ]
+    },
+    "rewrite_hierarchical": {
+      "description": "Boolean, in either encoding — taxonomy rewrite option (ACF taxonomy JSON).",
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "enum": [
+            "0",
+            "1"
+          ]
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
 }

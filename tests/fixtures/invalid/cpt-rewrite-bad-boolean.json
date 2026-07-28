@@ -1,0 +1,13 @@
+{
+    "key": "post_type_lexicon000000",
+    "title": "Lexicon",
+    "post_type": "lexicon",
+    "active": true,
+    "rewrite": {
+        "permalink_rewrite": "custom_permalink",
+        "slug": "slovnik-pojmu",
+        "feeds": "yes",
+        "pages": 2,
+        "with_front": null
+    }
+}
