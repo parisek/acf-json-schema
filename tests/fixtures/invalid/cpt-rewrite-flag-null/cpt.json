@@ -6,8 +6,6 @@
     "rewrite": {
         "permalink_rewrite": "custom_permalink",
         "slug": "slovnik-pojmu",
-        "feeds": "yes",
-        "pages": 2,
         "with_front": null
     }
 }

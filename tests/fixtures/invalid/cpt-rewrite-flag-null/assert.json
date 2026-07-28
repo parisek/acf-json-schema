@@ -1,0 +1,6 @@
+{
+    "description": "null must be rejected. It is the most likely real-world bad value — a hand-edited or partially-migrated export dropping a flag — and it casts to false silently in ACF's consumer, so the schema is the only place it can be caught.",
+    "schema": "https://schemas.parisek.dev/acf/cpt.schema.json",
+    "data_path": "/rewrite/with_front",
+    "min_violations": 1
+}

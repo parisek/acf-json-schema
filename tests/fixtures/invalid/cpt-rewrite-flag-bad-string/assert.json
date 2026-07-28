@@ -1,0 +1,6 @@
+{
+    "description": "A string outside the \"0\"/\"1\" enum must be rejected. The relaxation to oneOf[boolean, \"0\"/\"1\"] widened the accepted set deliberately; it must not have widened it to any string.",
+    "schema": "https://schemas.parisek.dev/acf/cpt.schema.json",
+    "data_path": "/rewrite/feeds",
+    "min_violations": 1
+}
