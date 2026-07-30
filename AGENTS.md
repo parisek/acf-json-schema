@@ -94,6 +94,9 @@ Significant decisions are recorded in `docs/adr/` (the only tracked subtree unde
 - **Propose, get a yes, then write.** Don't auto-create ADRs.
 - One file per decision: `NNNN-kebab-title.md`, sequential, numbers permanent (never renumber/reuse). Format: `## Context` / `## Decision` / `## Consequences`.
 - To reverse a past decision, write a new ADR linking back — don't edit the old one.
+- The ADR lands in the **same PR** as the work it describes — a merge gate, not a follow-up.
+- Citing a sibling repo's ADR: **always qualify it with the repo** — `tailwind-base ADR-0007`, never a bare `ADR 0007`. Numbering spaces are per-repo.
+- Every ADR belongs in the index in `docs/adr/README.md`; `composer adr` (and CI) enforces it.
 
 ## Style
 
