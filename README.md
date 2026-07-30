@@ -3,7 +3,7 @@
 [![Packagist Version](https://img.shields.io/packagist/v/parisek/acf-json-schema.svg)](https://packagist.org/packages/parisek/acf-json-schema)
 [![PHP Version](https://img.shields.io/packagist/php-v/parisek/acf-json-schema.svg)](https://packagist.org/packages/parisek/acf-json-schema)
 [![ACF Pro](https://img.shields.io/badge/ACF_Pro-6.8.x-blue.svg)](https://www.advancedcustomfields.com/pro/)
-[![Tests](https://github.com/parisek/acf-json-schema/actions/workflows/test.yml/badge.svg)](https://github.com/parisek/acf-json-schema/actions/workflows/test.yml)
+[![Tests](https://github.com/parisek/acf-json-schema/actions/workflows/tests.yml/badge.svg)](https://github.com/parisek/acf-json-schema/actions/workflows/tests.yml)
 [![License](https://img.shields.io/packagist/l/parisek/acf-json-schema.svg)](LICENSE)
 
 JSON Schema bundle for [Advanced Custom Fields](https://www.advancedcustomfields.com/) JSON exports — field groups (`acf.json`), Custom Post Types (`<cpt>.json`), Taxonomies (`<tax>.json`), and ACF Blocks (`block.json`).
