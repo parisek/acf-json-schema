@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **ADR practice unified across the four Composer packages.** `docs/adr/README.md`
+  and the `AGENTS.md` § *Architecture decisions* section now carry the same rules
+  as `parisek/styleguide`, `parisek/timber-kit` and `parisek/definition-kit`,
+  gaining two this repo lacked: an ADR of a sibling repo is cited qualified
+  (`tailwind-base ADR-0007`, never a bare number — the numbering spaces are
+  per-repo), and every ADR must appear in the index.
+
+  `scripts/check-adr-index.py` (`composer adr`, CI job *docs/adr/ index is in
+  sync*, also folded into `composer check`) enforces the second: it fails on an
+  ADR missing from the index, a duplicate number, a dangling index entry, or an
+  off-convention filename. This repo is already clean on all four — the check is
+  a guard against future drift, which a sibling had already accumulated.
+
 ## [0.7.2] - 2026-07-28
 
 ### Fixed

@@ -53,9 +53,11 @@
         "acf-target-version": "6.8.x"
     },
     "scripts": {
+        "adr": "python3 scripts/check-adr-index.py",
         "check": [
             "@test",
-            "@phpstan"
+            "@phpstan",
+            "@adr"
         ],
         "phpstan": "vendor/bin/phpstan analyse --memory-limit=512M",
         "test": "vendor/bin/phpunit"
