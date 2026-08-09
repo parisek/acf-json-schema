@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-08-09
+
 ### Fixed
 
 - **`flexible_content.layouts` now accepts both container shapes ACF itself
