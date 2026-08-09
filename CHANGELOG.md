@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`flexible_content.layouts` now accepts both container shapes ACF itself
+  produces.** The ref required a JSON array, matching ACF Pro 6.8.6's own
+  published field schema (`schemas/fields/v1/flexible_content.json`). But ACF's
+  field-group admin renders each layout's settings under
+  `[layouts][<layout_key>]` (`pro/fields/class-acf-field-flexible-content.php:348`),
+  so a save in wp-admin writes local JSON with `layouts` as an **object keyed by
+  layout key** — a file ACF just wrote, that this package then rejected.
+
+  ACF is internally inconsistent here, and it normalises neither shape: an
+  import→export round-trip through `acf_prepare_field_group_for_import()` /
+  `_for_export()` returns whichever shape it was handed. So `layouts` is now a
+  `oneOf` over an array of layouts and a `^layout_`-keyed map of them, with the
+  layout constraints factored into `$defs/layout` and applied identically to
+  both. Key/name/label requirements are unchanged — a map keyed by anything
+  other than a layout key still fails (new invalid fixture).
+
+  Found downstream on `sloneek`, where `composer lint:acf-json` failed on a
+  hand-authored component whose `layouts` followed the legacy keyed shape.
+
 ### Changed
 
 - **ADR practice unified across the four Composer packages.** `docs/adr/README.md`

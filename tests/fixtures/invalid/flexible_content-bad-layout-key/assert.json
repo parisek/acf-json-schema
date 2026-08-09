@@ -1,0 +1,5 @@
+{
+    "description": "The keyed form of `layouts` is keyed by the layout's own ACF key. A map keyed by the layout *name* must still fail — accepting both container shapes must not turn the key pattern into a free-for-all.",
+    "schema": "https://schemas.parisek.dev/acf/acf.schema.json",
+    "min_violations": 1
+}
