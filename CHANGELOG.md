@@ -22,8 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `_for_export()` returns whichever shape it was handed. So `layouts` is now a
   `oneOf` over an array of layouts and a `^layout_`-keyed map of them, with the
   layout constraints factored into `$defs/layout` and applied identically to
-  both. Key/name/label requirements are unchanged — a map keyed by anything
-  other than a layout key still fails (new invalid fixture).
+  both. Key/name/label requirements are unchanged — a map keyed by anything that
+  is not layout-key-shaped still fails (new invalid fixture).
+
+  Scope of the keyed branch, stated precisely: it constrains `propertyNames` to
+  `^layout_` and validates every value as a layout. It does **not** assert that a
+  map key equals its layout's own `key` — JSON Schema 2020-12 cannot compare a
+  property name against a nested value, so `{"layout_a": {"key": "layout_b"}}`
+  passes. ACF does not rely on that equality either (it reads `key` from the
+  layout body), so this is a documented limit, not a gap left to close.
 
   Found downstream on `sloneek`, where `composer lint:acf-json` failed on a
   hand-authored component whose `layouts` followed the legacy keyed shape.
