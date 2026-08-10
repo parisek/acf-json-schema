@@ -1,0 +1,14 @@
+{
+    "apiVersion": 3,
+    "name": "acf/invalid-keywords",
+    "title": "Invalid keywords",
+    "category": "theme",
+    "icon": "dashicons-warning",
+    "keywords": [1, 2, 3],
+    "supports": {},
+    "example": null,
+    "acf": {
+        "mode": "preview",
+        "renderCallback": "timber_block_render_callback"
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "description": "Block keywords must be strings; numeric entries are not accepted by WordPress block metadata.",
+    "schema": "https://schemas.parisek.dev/acf/block.schema.json",
+    "data_path": "/keywords/0",
+    "min_violations": 1
+}

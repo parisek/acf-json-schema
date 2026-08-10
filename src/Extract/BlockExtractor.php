@@ -42,7 +42,10 @@ final class BlockExtractor {
                         ],
                     ],
                 ],
-                'keywords' => ['type' => ['null', 'array']],
+                'keywords' => [
+                    'type' => ['null', 'array'],
+                    'items' => ['type' => 'string'],
+                ],
                 'supports' => ['type' => 'object'],
                 'attributes' => ['type' => 'object'],
                 'example' => ['type' => ['null', 'object']],
