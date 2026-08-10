@@ -63,7 +63,10 @@
             "type": [
                 "null",
                 "array"
-            ]
+            ],
+            "items": {
+                "type": "string"
+            }
         },
         "supports": {
             "type": "object"
