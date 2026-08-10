@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`keywords` entries must now be strings.** The block schema declared
+  `keywords` as `["null", "array"]` and stopped there, so `"keywords": [1, 2, 3]`
+  passed both the validator and `acf-lint --strict`. WordPress block metadata
+  requires an array of strings; a numeric entry reaches the block registry and is
+  not usable as a search keyword. A regression fixture pins the violation at
+  `/keywords/0`.
+
+  Surfaced while reviewing the `parisek/definition-kit` fix that stopped its
+  generator dropping `description` and `keywords` — the key the generator was
+  losing turned out never to have been constrained here either.
+
+  The same untyped-items gap exists on `acf.hide_on_screen`,
+  `cpt.capability_type`, `cpt.taxonomies` and a number of field-schema arrays.
+  Those are **deliberately left alone**: several accept mixed scalar shapes, and
+  typing them correctly needs real ACF serialization evidence rather than a
+  guess. Tracked for a follow-up.
+
 ## [0.7.3] - 2026-08-09
 
 ### Fixed
