@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`wpml_cf_preferences: 3` is now valid on an image or gallery under a
+  `post_type`/`block` location.** Copy-once is the correct mode for an image the
+  editor re-authors per language — an e-book cover with the headline baked into
+  the artwork, a localised screenshot. Copy (`1`) re-syncs from the default
+  language on every save, so the previous "must be 1" left such a project unable
+  to be lint-clean without overwriting the translated asset, and the package has
+  no ignore mechanism to silence it locally. `2` stays rejected outside options
+  pages, and `3` stays rejected on an options page, which has no post
+  duplication to seed a copy-once value from.
+- **The `--wpml` image/gallery message now names the value it actually found.**
+  Every post/block finding used to read "value 2 is the options-page-only
+  carve-out", including for a field carrying `0` — which was then told why a
+  value it does not have is wrong.
+
 ## [0.7.4] - 2026-08-10
 
 ### Fixed
