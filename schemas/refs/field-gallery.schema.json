@@ -19,8 +19,8 @@
         "mime_types": { "type": "string" },
         "insert": { "enum": ["append", "prepend"] },
         "wpml_cf_preferences": {
-            "enum": [1, 2],
-            "description": "1 in the common post/block context (\"copy\" — non-translatable). 2 is also valid: on ACF Options Pages, ACFML permanently locks a copy-flagged (1) field to its default-language value (no post duplication to copy from), so options-page gallery fields are documented (tailwind-base wordpress/gutenberg.md, wordpress/wpml.md) to use 2 instead. The schema has no per-location context to enforce 1-only-outside-options-pages, so both canonical values are accepted here."
+            "enum": [1, 2, 3],
+            "description": "1 in the common post/block context (\"copy\" — non-translatable). 2 is also valid: on ACF Options Pages, ACFML permanently locks a copy-flagged (1) field to its default-language value (no post duplication to copy from), so options-page gallery fields are documented (tailwind-base wordpress/gutenberg.md, wordpress/wpml.md) to use 2 instead. 3 (\"copy once\") is valid under post_type/block for a gallery the editor is expected to RE-AUTHOR per language — artwork with text baked in, localised screenshots: 1 re-syncs from the default language on every save and overwrites that work, while 3 seeds the translation and then leaves it alone. The schema has no per-location context to decide which applies where, so every canonical value is accepted; AcfLinter's --wpml location cross-check narrows them per context."
         }
     }
 }

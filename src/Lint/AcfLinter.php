@@ -283,15 +283,16 @@ final class AcfLinter {
     }
 
     /**
-     * PR #29 review finding — `enum: [1, 2]` on image/gallery
+     * PR #29 review finding — `enum: [1, 2, 3]` on image/gallery
      * (field-image.schema.json / field-gallery.schema.json) is
      * deliberately context-free: the schema has no visibility into a
-     * field's own field group's `location`, so it accepts both the
-     * common post/block value (1) and the options-page-only value (2)
-     * everywhere, unconditionally. That closed the options-page false
-     * positive but opened the inverse false negative in the far more
-     * common post/block context: an image/gallery field mistakenly
-     * authored with `wpml_cf_preferences: 2` under a `post_type`/`block`
+     * field's own field group's `location`, so it accepts the common
+     * post/block value (1), the options-page-only value (2) and the
+     * re-authored-per-language value (3) everywhere, unconditionally.
+     * That closed the options-page false positive but opened the inverse
+     * false negative in the far more common post/block context: an
+     * image/gallery field mistakenly authored with
+     * `wpml_cf_preferences: 2` under a `post_type`/`block`
      * location now validates silently, and translators lose per-language
      * image swapping on that field. This is the ONLY place in the
      * package with both `fields` and `location` in view at once — the
@@ -487,19 +488,33 @@ final class AcfLinter {
     /**
      * Recurse fields + nested sub_fields + flexible-content layouts (same
      * shape as {@see walkFieldsWpml()}), flagging any `image`/`gallery`
-     * field whose `wpml_cf_preferences` doesn't match the ONE value valid
-     * for $context. Non-image/gallery field types are untouched here —
-     * their `wpml_cf_preferences` enum (`[0, 1, 2, 3]` in
-     * field.schema.json) is already context-free by design, only
-     * image/gallery narrowed to `[1, 2]` for the options-page carve-out
-     * this check exists to make precise.
+     * field whose `wpml_cf_preferences` is not valid for $context.
+     * Non-image/gallery field types are untouched here — their
+     * `wpml_cf_preferences` enum (`[0, 1, 2, 3]` in field.schema.json) is
+     * already context-free by design, only image/gallery narrowed to
+     * `[1, 2, 3]` for the carve-outs this check exists to make precise.
      *
      * @param array<int|string, mixed> $fields
      * @param 'options_page'|'post_type_or_block' $context
      * @param array<string, string> $out
      */
     private function walkFieldsWpmlLocationValue(array $fields, string $base, string $context, array &$out): void {
-        $required = $context === 'options_page' ? 2 : 1;
+        // Options pages have no post duplication, so copy-once (3) has nothing
+        // to seed a translation FROM — 2 stays the only correct value there.
+        //
+        // Under post_type/block both 1 and 3 are defensible and the choice is
+        // editorial, not mechanical: 1 shares one asset across every language
+        // and re-syncs it on each save; 3 seeds the translation once and then
+        // lets the editor re-author it. An image carrying text — an e-book
+        // cover, a localised screenshot, artwork with a headline baked in — is
+        // the 3 case, and demanding 1 there does not merely warn: it prescribes
+        // an edit that overwrites the translated artwork the next time the
+        // default-language post is saved.
+        //
+        // 2 stays rejected outside options pages: it is the carve-out for a
+        // context where 1 cannot work, and elsewhere it disables the
+        // per-language remapping that makes an image field multilingual at all.
+        $allowed = $context === 'options_page' ? [2] : [1, 3];
 
         foreach ($fields as $i => $field) {
             if (!$field instanceof \stdClass) {
@@ -508,16 +523,14 @@ final class AcfLinter {
             $ptr = $base . '/' . $i;
             $type = is_string($field->type ?? null) ? $field->type : '';
             $pref = $field->wpml_cf_preferences ?? null;
-            if (in_array($type, ['image', 'gallery'], true) && is_int($pref) && $pref !== $required) {
+            if (in_array($type, ['image', 'gallery'], true) && is_int($pref) && !in_array($pref, $allowed, true)) {
                 $out[$ptr . '/wpml_cf_preferences'] = sprintf(
-                    'required by --wpml: %s under a %s location must be %d (got %d) — %s',
+                    'required by --wpml: %s under a %s location must be %s (got %d) — %s',
                     $type,
                     $context === 'options_page' ? 'options_page' : 'post_type/block',
-                    $required,
+                    count($allowed) === 1 ? (string) $allowed[0] : implode(' or ', $allowed),
                     $pref,
-                    $context === 'options_page'
-                        ? 'ACFML locks a copy-flagged (1) field to its default-language value on Options Pages'
-                        : 'value 2 is the options-page-only carve-out and disables per-language translation here',
+                    $this->wpmlLocationValueReason($context, $pref),
                 );
             }
             if (isset($field->sub_fields) && is_array($field->sub_fields)) {
@@ -535,6 +548,32 @@ final class AcfLinter {
                 }
             }
         }
+    }
+
+    /**
+     * Explains the value that was ACTUALLY found, rather than restating the
+     * rule. The previous single-sentence-per-context message always described
+     * `2`, so a field carrying `0` or `3` was told why a value it does not have
+     * is wrong — the reader then has to guess which half of the sentence
+     * applies to them.
+     *
+     * @param 'options_page'|'post_type_or_block' $context
+     */
+    private function wpmlLocationValueReason(string $context, int $pref): string {
+        if ($context === 'options_page') {
+            return match ($pref) {
+                1 => 'ACFML locks a copy-flagged (1) field to its default-language value on Options Pages',
+                3 => 'copy-once (3) seeds a translation from its source post, and an Options Page has no post duplication to seed from',
+                0 => 'ignore (0) keeps the field out of translation entirely, so an Options Page can hold only one language\'s value',
+                default => 'only 2 holds a per-language value on an Options Page',
+            };
+        }
+
+        return match ($pref) {
+            2 => 'value 2 is the options-page-only carve-out and disables per-language translation here',
+            0 => 'ignore (0) keeps the field out of translation entirely — use 1 to share one asset across languages, or 3 when the editor re-authors the image per language',
+            default => 'use 1 to share one asset across languages, or 3 when the editor re-authors the image per language',
+        };
     }
 
     /**

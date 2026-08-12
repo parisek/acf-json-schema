@@ -360,6 +360,82 @@ final class AcfLinterTest extends TestCase {
     }
 
     /**
+     * Copy-once (3) is a legitimate post/block value for an image the editor
+     * RE-AUTHORS per language — an e-book cover with the headline baked into
+     * the artwork, a localised screenshot. Copy (1) re-syncs from the default
+     * language on every save and overwrites that work, so demanding 1 here
+     * does not merely warn: it prescribes an edit that destroys the
+     * translated asset.
+     *
+     * Found downstream on `sloneek`, where five image fields sat on 3 and the
+     * rule left the project unable to be lint-clean without losing
+     * per-language e-book covers. The package has no ignore mechanism, so
+     * "silence it locally" was not available either.
+     */
+    public function test_wpml_on_image_field_with_copy_once_under_post_type_location_passes(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 3,
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /** Same allowance for a gallery, under a `block` location. */
+    public function test_wpml_on_gallery_field_with_copy_once_under_block_location_passes(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'block', 'operator' => '==', 'value' => 'acf/hero']]],
+        ], [
+            [
+                'key' => 'field_gal', 'label' => 'Gal', 'name' => 'gal', 'type' => 'gallery',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 3,
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
+     * The allowance is context-scoped, not blanket. An Options Page has no
+     * post duplication, so copy-once has nothing to seed a translation FROM —
+     * 2 remains the only value that holds a per-language value there, and 3
+     * must still be flagged.
+     */
+    public function test_wpml_on_image_field_with_copy_once_under_options_page_location_fails(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'options_page', 'operator' => '==', 'value' => 'options_social']]],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 3,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    /**
+     * The message must describe the value that was ACTUALLY found. Before
+     * this, every post/block finding read "value 2 is the options-page-only
+     * carve-out" — including for a field carrying 0, which was then told why a
+     * value it does not have is wrong.
+     */
+    public function test_wpml_image_location_message_names_the_offending_value(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 0,
+            ],
+        ]), true);
+        self::assertFalse($r->valid);
+        $message = $r->errors['/fields/0/wpml_cf_preferences'] ?? '';
+        self::assertStringContainsString('ignore (0)', $message);
+        self::assertStringNotContainsString('value 2 is the options-page-only', $message);
+    }
+
+    /**
      * Mixed location (an OR-group targeting BOTH an options page and a
      * post type) is genuinely ambiguous — there is no single "correct"
      * value the linter can demand without false-flagging a legitimate
