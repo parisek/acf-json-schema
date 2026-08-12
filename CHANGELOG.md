@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-08-12
+
 ### Fixed
 
 - **`wpml_cf_preferences: 3` is now valid on an image or gallery under a
