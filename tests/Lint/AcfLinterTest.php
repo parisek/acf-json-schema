@@ -397,6 +397,33 @@ final class AcfLinterTest extends TestCase {
     }
 
     /**
+     * Copy-once must be available to an image ANYWHERE it can legitimately be
+     * re-authored per language, not only under post_type/block — a menu item's
+     * icon, a term image, a user field.
+     *
+     * It reaches those through the schema, not through this check: `taxonomy`,
+     * `nav_menu_item`, `user_form`, `widget` and `nav_menu` classify as
+     * 'other', so classifyLocationContext() returns null and the location
+     * cross-check never runs for them. The `enum` is what governs there, and it
+     * has no notion of location. Pinned here because the two halves of this fix
+     * are easy to conflate, and a future narrowing of the enum would break menus
+     * silently — nothing else in the suite covers an image outside the two
+     * classified contexts.
+     */
+    public function test_wpml_on_image_field_with_copy_once_under_nav_menu_location_passes(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'nav_menu_item', 'operator' => '==', 'value' => 'all']]],
+        ], [
+            [
+                'key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image',
+                'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 3,
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    /**
      * The allowance is context-scoped, not blanket. An Options Page has no
      * post duplication, so copy-once has nothing to seed a translation FROM —
      * 2 remains the only value that holds a per-language value there, and 3
