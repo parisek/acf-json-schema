@@ -4,6 +4,8 @@
     "title": "ACF Field — Text",
     "type": "object",
     "properties": {
-        "maxlength": { "type": ["string", "integer", "null"] }
+        "maxlength": { "type": ["string", "integer", "null"] },
+        "readonly": { "enum": [0, 1], "description": "ACF renders this into the input's readonly attribute." },
+        "disabled": { "enum": [0, 1], "description": "ACF renders this into the input's disabled attribute." }
     }
 }

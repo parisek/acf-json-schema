@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`readonly` and `disabled` are now valid on the field types that render
+  them.** ACF Pro passes both into the rendered input for `text`, `textarea`,
+  `number`, `range`, `email`, `url`, `select`, `date_picker`,
+  `date_time_picker` and `time_picker`, but no schema declared either key and
+  `field-item.schema.json` sets `unevaluatedProperties: false` — so a field
+  group using ACF's own read-only inputs failed validation, with no local
+  ignore to fall back on. Added per type rather than to the base field schema:
+  ACF ignores both on `image`, `repeater`, `true_false` and the rest, and
+  accepting them there would let dead configuration ship silently.
+
 ## [0.7.5] - 2026-08-12
 
 ### Fixed

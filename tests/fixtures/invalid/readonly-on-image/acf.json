@@ -1,0 +1,29 @@
+{
+    "key": "group_test_readonly_on_image",
+    "title": "Test: readonly on an image field (forbidden)",
+    "fields": [
+        {
+            "key": "field_test_image_readonly",
+            "label": "Image",
+            "name": "image",
+            "type": "image",
+            "allow_in_bindings": 0,
+            "return_format": "array",
+            "readonly": 1,
+            "wpml_cf_preferences": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "page"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "active": true,
+    "modified": 1716000000,
+    "acfml_field_group_mode": "advanced"
+}

@@ -6,6 +6,8 @@
     "properties": {
         "min": { "type": ["number", "string", "null"], "description": "ACF stores an unset bound as an empty string." },
         "max": { "type": ["number", "string", "null"] },
-        "step": { "type": ["number", "string", "null"] }
+        "step": { "type": ["number", "string", "null"] },
+        "readonly": { "enum": [0, 1], "description": "ACF renders this into the input's readonly attribute." },
+        "disabled": { "enum": [0, 1], "description": "ACF renders this into the input's disabled attribute." }
     }
 }

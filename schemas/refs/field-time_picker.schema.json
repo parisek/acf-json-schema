@@ -5,6 +5,8 @@
     "type": "object",
     "properties": {
         "display_format": { "type": "string" },
-        "return_format": { "type": "string" }
+        "return_format": { "type": "string" },
+        "readonly": { "enum": [0, 1], "description": "ACF renders this into the input's readonly attribute." },
+        "disabled": { "enum": [0, 1], "description": "ACF renders this into the input's disabled attribute." }
     }
 }
