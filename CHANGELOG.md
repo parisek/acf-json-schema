@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`repeater` / `flexible_content` now accept `wpml_cf_preferences: 1` as well
+  as `3`, and the finding is labelled doctrine rather than a plugin fact.** The
+  rule claimed ACFML forces wrappers to `3` at runtime and that anything else is
+  dead configuration. It does not: `field_should_be_set_to_copy_once()` only
+  widens `is_field_parsable()`, and `save_field_settings()` writes the
+  configured value. On options pages `EditorHooks::maybeCopyWrapperToTranslations()`
+  fires at `1`, not `3`, so `3` is not privileged there either — and ACFML's own
+  block-preference migration writes `1` to wrappers. Both values are legitimate:
+  `3` when translations should diverge, `1` when the rows are identical in every
+  language, because `1` carries the row-count meta ACF reads first and `3` omits
+  it, emptying the field on every translation. Reported in #39 after the rule's
+  advice caused a production defect downstream and then flagged its fix.
+
 ## [0.7.6] - 2026-09-04
 
 ### Fixed

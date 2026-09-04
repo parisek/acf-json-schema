@@ -229,7 +229,13 @@ final class AcfLinter {
      * @param array<string, string>    $out
      */
     private function walkFieldsWpmlTypeValue(array $fields, string $base, array &$out): void {
-        $pluginForced = ['repeater', 'flexible_content'];
+        // Wrapper containers. NOT a plugin fact: ACFML does not force these to
+        // any value. `field_should_be_set_to_copy_once()` only widens
+        // `is_field_parsable()`; `save_field_settings()` then writes the
+        // CONFIGURED preference. On options pages
+        // `EditorHooks::maybeCopyWrapperToTranslations()` fires at 1, not 3, so
+        // 3 is not privileged there either. See #39.
+        $wrapperContainers = ['repeater', 'flexible_content'];
         $uiPseudoFields = ['accordion', 'tab', 'message'];
 
         foreach ($fields as $i => $field) {
@@ -240,12 +246,12 @@ final class AcfLinter {
             $type = is_string($field->type ?? null) ? $field->type : '';
             $pref = $field->wpml_cf_preferences ?? null;
 
-            if (in_array($type, $pluginForced, true) && $pref !== 3) {
+            if (in_array($type, $wrapperContainers, true) && !in_array($pref, [1, 3], true)) {
                 $out[$ptr . '/wpml_cf_preferences'] = sprintf(
-                    'required by --wpml: %s is forcibly overridden to 3 by ACFML at runtime '
-                        . '(ACFML\\Helper\\Fields::WRAPPER_FIELDS, class-wpml-acf-field-settings.php '
-                        . 'field_should_be_set_to_copy_once(), WPML_COPY_ONCE_CUSTOM_FIELD = 3) — any other '
-                        . 'configured value (got %s) is dead configuration',
+                    'required by --wpml (doctrine, not a plugin fact): %s containers take 3 when '
+                        . 'translations should diverge, or 1 when the rows are identical in every '
+                        . 'language — 1 carries the row-count meta ACF reads first, which 3 omits, '
+                        . 'emptying the field on every translation — got %s',
                     $type,
                     $pref === null ? 'absent' : var_export($pref, true),
                 );
