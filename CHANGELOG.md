@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.7] - 2026-09-04
+
 ### Fixed
 
 - **`repeater` / `flexible_content` now accept `wpml_cf_preferences: 1` as well
