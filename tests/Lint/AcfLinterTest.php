@@ -684,12 +684,38 @@ final class AcfLinterTest extends TestCase {
         self::assertTrue($r->valid, (string) json_encode($r->errors));
     }
 
+    public function test_wpml_repeater_with_value_1_passes(): void {
+        // 1 (copy) is correct when the rows are identical in every language.
+        // 3 (copy once) omits the row-count meta ACF reads first, which empties
+        // the field on every translation -- the defect behind #39.
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1,
+                'sub_fields' => [],
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
+    public function test_wpml_flexible_content_with_value_1_passes(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_fc', 'label' => 'FC', 'name' => 'fc', 'type' => 'flexible_content',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1,
+                'layouts' => [],
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+    }
+
     /** @return iterable<string, array{0: int|null}> */
     public static function wrongRepeaterValues(): iterable {
         yield 'zero' => [0];
-        yield 'one' => [1];
         yield 'two' => [2];
         yield 'absent' => [null];
+        // 1 is deliberately absent: it is valid for a container whose rows are
+        // identical in every language. See test_wpml_repeater_with_value_1_passes().
     }
 
     /**
@@ -706,7 +732,7 @@ final class AcfLinterTest extends TestCase {
         $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [$field]), true);
         self::assertFalse($r->valid, "value " . var_export($value, true) . " must be flagged for repeater");
         self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
-        self::assertStringContainsString('ACFML', $r->errors['/fields/0/wpml_cf_preferences']);
+        self::assertStringContainsString('doctrine', $r->errors['/fields/0/wpml_cf_preferences']);
     }
 
     /**
@@ -886,8 +912,11 @@ final class AcfLinterTest extends TestCase {
                                 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3,
                                 'sub_fields' => [
                                     [
+                                        // 2 rather than 1: this test proves the walker RECURSES,
+                                        // so the innermost value only has to be an invalid one.
+                                        // 1 became valid for containers in #39.
                                         'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater',
-                                        'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1,
+                                        'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2,
                                         'sub_fields' => [],
                                     ],
                                 ],
