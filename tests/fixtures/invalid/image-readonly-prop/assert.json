@@ -1,0 +1,5 @@
+{
+    "description": "readonly and disabled are accepted only on the field types whose ACF render method passes them into the input (text, textarea, number, range, email, url, select, date_picker, date_time_picker, time_picker). ACF ignores them on an image field, so accepting the key here would let dead configuration ship silently.",
+    "schema": "https://schemas.parisek.dev/acf/acf.schema.json",
+    "min_violations": 1
+}

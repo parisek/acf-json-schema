@@ -2,5 +2,9 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://schemas.parisek.dev/acf/refs/field-email.schema.json",
     "title": "ACF Field — Email",
-    "type": "object"
+    "type": "object",
+    "properties": {
+        "readonly": { "enum": [0, 1], "description": "ACF renders this into the input's readonly attribute." },
+        "disabled": { "enum": [0, 1], "description": "ACF renders this into the input's disabled attribute." }
+    }
 }

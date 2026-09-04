@@ -1,0 +1,130 @@
+{
+    "key": "group_test_readonly_inputs",
+    "title": "Test: readonly / disabled on every input type that renders them",
+    "fields": [
+        {
+            "key": "field_test_ro_text",
+            "label": "text",
+            "name": "ro_text",
+            "type": "text",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 0,
+            "wpml_cf_preferences": 2
+        },
+        {
+            "key": "field_test_ro_textarea",
+            "label": "textarea",
+            "name": "ro_textarea",
+            "type": "textarea",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 1,
+            "wpml_cf_preferences": 2
+        },
+        {
+            "key": "field_test_ro_number",
+            "label": "number",
+            "name": "ro_number",
+            "type": "number",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 0,
+            "wpml_cf_preferences": 2
+        },
+        {
+            "key": "field_test_ro_range",
+            "label": "range",
+            "name": "ro_range",
+            "type": "range",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 1,
+            "wpml_cf_preferences": 2
+        },
+        {
+            "key": "field_test_ro_email",
+            "label": "email",
+            "name": "ro_email",
+            "type": "email",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 0,
+            "wpml_cf_preferences": 2
+        },
+        {
+            "key": "field_test_ro_url",
+            "label": "url",
+            "name": "ro_url",
+            "type": "url",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 1,
+            "wpml_cf_preferences": 2
+        },
+        {
+            "key": "field_test_ro_password",
+            "label": "password",
+            "name": "ro_password",
+            "type": "password",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 0,
+            "wpml_cf_preferences": 2
+        },
+        {
+            "key": "field_test_ro_select",
+            "label": "select",
+            "name": "ro_select",
+            "type": "select",
+            "allow_in_bindings": 0,
+            "return_format": "value",
+            "readonly": 1,
+            "disabled": 1,
+            "wpml_cf_preferences": 1
+        },
+        {
+            "key": "field_test_ro_date",
+            "label": "date_picker",
+            "name": "ro_date",
+            "type": "date_picker",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 0,
+            "wpml_cf_preferences": 2
+        },
+        {
+            "key": "field_test_ro_date_time",
+            "label": "date_time_picker",
+            "name": "ro_date_time",
+            "type": "date_time_picker",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 1,
+            "wpml_cf_preferences": 2
+        },
+        {
+            "key": "field_test_ro_time",
+            "label": "time_picker",
+            "name": "ro_time",
+            "type": "time_picker",
+            "allow_in_bindings": 0,
+            "readonly": 1,
+            "disabled": 0,
+            "wpml_cf_preferences": 2
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "page"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "active": true,
+    "modified": 1716000000,
+    "acfml_field_group_mode": "advanced"
+}

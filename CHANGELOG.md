@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`readonly` and `disabled` are now valid on the field types that render
+  them.** ACF Pro passes both into the rendered input for `text`, `textarea`,
+  `number`, `range`, `email`, `url`, `password`, `select`, `date_picker`,
+  `date_time_picker` and `time_picker`, but no schema declared either key and
+  `field-item.schema.json` sets `unevaluatedProperties: false` — so a field
+  group using ACF's own read-only inputs failed validation, with no local
+  ignore to fall back on. Grounded in
+  `includes/fields/class-acf-field-text.php:71` (which `password` reaches via
+  `class-acf-field-password.php:52`, delegating its whole render to `text`),
+  `class-acf-field-select.php:283`, and the `$keys2` list each remaining type
+  passes to `acf_esc_attrs()`. Added per type rather than to the base field
+  schema: ACF ignores both on `image`, `repeater`, `true_false` and the rest,
+  and accepting them there would let dead configuration ship silently. Found
+  downstream on `fellows`, whose `flat` group marks two import-owned fields
+  read-only.
+  Note for future ACF upgrades: this is a per-type list and it will need
+  re-checking when ACF changes which types render these attributes.
+
 ## [0.7.5] - 2026-08-12
 
 ### Fixed

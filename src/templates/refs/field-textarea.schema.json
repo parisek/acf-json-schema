@@ -6,6 +6,8 @@
     "properties": {
         "maxlength": { "type": ["string", "integer", "null"] },
         "rows": { "type": ["string", "integer", "null"] },
-        "new_lines": { "enum": ["wpautop", "br", ""] }
+        "new_lines": { "enum": ["wpautop", "br", ""] },
+        "readonly": { "enum": [0, 1], "description": "ACF renders this into the input's readonly attribute." },
+        "disabled": { "enum": [0, 1], "description": "ACF renders this into the input's disabled attribute." }
     }
 }
