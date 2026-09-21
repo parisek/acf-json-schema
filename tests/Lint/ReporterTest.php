@@ -46,11 +46,11 @@ final class ReporterTest extends TestCase {
         $this->assertCount(4, $doc['files']);
         $this->assertSame(
             ['path' => 'b/acf.json', 'kind' => 'acf', 'valid' => false, 'skipped' => false, 'fixed' => false,
-             'errors' => ['/fields/0' => 'The required properties (type) are missing']],
+             'errors' => ['/fields/0' => 'The required properties (type) are missing'], 'notices' => []],
             $doc['files'][1],
         );
         $this->assertSame(
-            ['scanned' => 4, 'ok' => 2, 'filesWithErrors' => 1, 'errors' => 1, 'fixed' => 1, 'skipped' => 1],
+            ['scanned' => 4, 'ok' => 2, 'filesWithErrors' => 1, 'errors' => 1, 'fixed' => 1, 'skipped' => 1, 'notices' => 0],
             $doc['summary'],
         );
     }

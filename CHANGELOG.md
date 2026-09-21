@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Notices — findings that ask rather than fail.** A notice never makes a file
+  invalid and never changes the exit code, `--strict` included. It prints as
+  `•` in text output, as a per-file `notices` object plus a `summary.notices`
+  count in the JSON document, and as `::notice` in GitHub Actions. The JSON
+  document therefore gained two keys; a consumer reading only the existing ones
+  is unaffected.
+- **`--wpml` notice: a `link` field at `wpml_cf_preferences: 1` (Copy).** At `1`
+  the block-render sync replaces the whole stored value — url, title, target —
+  with the source language's, and nothing translates it afterwards, so a
+  translation's own correct URL is discarded. Measured on a five-language site:
+  two such fields, 8 links across 4 translated pages, all pointing into the
+  source language while the database held the right URL for each one.
+  Deliberately not an error: `1` stays legitimate for a link that is identical
+  in every language, and no static check can tell that from the broken case —
+  the same `type: link` definition accepts an internal URL, an external one, an
+  anchor and a `mailto:`. Refs #30.
+
 ## [0.7.7] - 2026-09-04
 
 ### Fixed

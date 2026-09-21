@@ -929,4 +929,64 @@ final class AcfLinterTest extends TestCase {
         self::assertFalse($r->valid);
         self::assertArrayHasKey('/fields/0/layouts/layout_a/sub_fields/0/sub_fields/0/wpml_cf_preferences', $r->errors);
     }
+
+    /**
+     * `link` at `1` is a NOTICE, never an error: the file stays valid, the
+     * exit code under --strict is unaffected, and the reader is asked a
+     * question no static check can answer for them.
+     */
+    public function test_wpml_link_at_1_emits_a_notice_and_stays_valid(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_l', 'label' => 'L', 'name' => 'l', 'type' => 'link', 'return_format' => 'array', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+        ]), true);
+
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+        self::assertSame([], $r->errors);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->notices);
+        self::assertStringContainsString('notice:', $r->notices['/fields/0/wpml_cf_preferences']);
+    }
+
+    public function test_wpml_link_at_2_is_silent(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_l', 'label' => 'L', 'name' => 'l', 'type' => 'link', 'return_format' => 'array', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+        ]), true);
+
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+        self::assertSame([], $r->notices);
+    }
+
+    public function test_wpml_link_notice_reaches_nested_and_layout_fields(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3,
+                'sub_fields' => [
+                    ['key' => 'field_rl', 'label' => 'RL', 'name' => 'rl', 'type' => 'link', 'return_format' => 'array', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+                ],
+            ],
+            [
+                'key' => 'field_f', 'label' => 'F', 'name' => 'f', 'type' => 'flexible_content',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3,
+                'layouts' => [
+                    'layout_1' => [
+                        'key' => 'layout_1', 'name' => 'one', 'label' => 'One', 'display' => 'block',
+                        'sub_fields' => [
+                            ['key' => 'field_fl', 'label' => 'FL', 'name' => 'fl', 'type' => 'link', 'return_format' => 'array', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+                        ],
+                    ],
+                ],
+            ],
+        ]), true);
+
+        self::assertArrayHasKey('/fields/0/sub_fields/0/wpml_cf_preferences', $r->notices);
+        self::assertArrayHasKey('/fields/1/layouts/layout_1/sub_fields/0/wpml_cf_preferences', $r->notices);
+    }
+
+    public function test_wpml_link_notice_is_off_without_the_wpml_flag(): void {
+        $r = $this->lintAcf(self::group([], [
+            ['key' => 'field_l', 'label' => 'L', 'name' => 'l', 'type' => 'link', 'return_format' => 'array', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+        ]), false);
+
+        self::assertSame([], $r->notices);
+    }
 }
