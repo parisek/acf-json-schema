@@ -48,21 +48,24 @@ if ($opts->help || $opts->paths === []) {
       acf-lint [--strict] [--fix] [--wpml] [--format=<text|json|github>] [--max-errors=<N>] [--] <path>...
 
       <path>          File or directory (directories are walked recursively for *.json)
-      --strict        Exit 1 if any file has findings (CI gate)
+      --strict        Exit 1 if any file has ERRORS (CI gate). Notices never
+                      affect the exit code
       --fix           Auto-bump stale/missing `modified` timestamps
       --wpml          Require WPML/ACFML translation keys to be PRESENT on field
                       groups (acfml_field_group_mode) and every field
                       (wpml_cf_preferences). Opt-in; schemas keep them optional.
       --format=<f>    Output format: text (default; findings on stderr, summary
                       on stdout), json (one machine-readable document on stdout),
-                      github (GitHub Actions ::error annotations on stdout)
+                      github (GitHub Actions ::error / ::notice annotations on
+                      stdout)
       --max-errors=<N>  Cap schema errors collected per file (default 50)
       --version       Print the installed package version
       --              Treat every following argument as a path (even if it starts with -)
 
     Colors: text format only, auto-disabled when stderr is not a TTY or NO_COLOR is set.
 
-    Exit codes: 0 ok (or findings without --strict), 1 findings under --strict / bad args.
+    Exit codes: 0 ok (or errors without --strict, or notices alone), 1 errors
+    under --strict / bad args.
 
     USAGE);
     exit($opts->paths === [] && !$opts->help ? 1 : 0);

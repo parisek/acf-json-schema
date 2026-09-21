@@ -944,6 +944,7 @@ final class AcfLinterTest extends TestCase {
         self::assertSame([], $r->errors);
         self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->notices);
         self::assertStringContainsString('notice:', $r->notices['/fields/0/wpml_cf_preferences']);
+        self::assertStringContainsString('link at 1 (Copy)', $r->notices['/fields/0/wpml_cf_preferences']);
     }
 
     public function test_wpml_link_at_2_is_silent(): void {
@@ -980,6 +981,28 @@ final class AcfLinterTest extends TestCase {
 
         self::assertArrayHasKey('/fields/0/sub_fields/0/wpml_cf_preferences', $r->notices);
         self::assertArrayHasKey('/fields/1/layouts/layout_1/sub_fields/0/wpml_cf_preferences', $r->notices);
+    }
+
+    public function test_wpml_link_notice_reaches_array_shaped_layouts(): void {
+        // ACF writes `layouts` as an object keyed by layout key, but a
+        // hand-written or regenerated file can carry a plain list. The walker
+        // accepts both; only the keyed shape was covered.
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_f', 'label' => 'F', 'name' => 'f', 'type' => 'flexible_content',
+                'allow_in_bindings' => 0, 'wpml_cf_preferences' => 3,
+                'layouts' => [
+                    [
+                        'key' => 'layout_1', 'name' => 'one', 'label' => 'One', 'display' => 'block',
+                        'sub_fields' => [
+                            ['key' => 'field_fl', 'label' => 'FL', 'name' => 'fl', 'type' => 'link', 'return_format' => 'array', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+                        ],
+                    ],
+                ],
+            ],
+        ]), true);
+
+        self::assertArrayHasKey('/fields/0/layouts/0/sub_fields/0/wpml_cf_preferences', $r->notices);
     }
 
     public function test_wpml_link_notice_is_off_without_the_wpml_flag(): void {

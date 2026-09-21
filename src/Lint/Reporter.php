@@ -145,7 +145,7 @@ final class Reporter {
             $line .= ", {$s['skipped']} skipped";
         }
         if ($s['notices'] > 0) {
-            $line .= ', ' . $paint("{$s['notices']} notices", '36');
+            $line .= ', ' . $paint($s['notices'] . ' ' . ($s['notices'] === 1 ? 'notice' : 'notices'), '36');
         }
         return $line;
     }

@@ -24,7 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Deliberately not an error: `1` stays legitimate for a link that is identical
   in every language, and no static check can tell that from the broken case —
   the same `type: link` definition accepts an internal URL, an external one, an
-  anchor and a `mailto:`. Refs #30.
+  anchor and a `mailto:`. The message attributes the render-time mechanics to
+  the consuming theme (`parisek/timber-kit` and the like) rather than to ACFML,
+  which has no render-time sync of its own. Refs #30.
 
 ## [0.7.7] - 2026-09-04
 

@@ -135,8 +135,8 @@ final class AcfLintBinTest extends TestCase {
         try {
             $r = $this->runBin('--wpml', '--strict', $file);
             $this->assertSame(0, $r['exit'], 'a notice must never fail the build');
-            $this->assertStringContainsString('notice: link at 1', $r['stderr']);
-            $this->assertStringContainsString('1 notices', $r['stdout']);
+            $this->assertStringContainsString('link at 1 (Copy)', $r['stderr']);
+            $this->assertStringContainsString('1 notice', $r['stdout']);
         } finally {
             @unlink($file);
             @rmdir($dir);
@@ -199,7 +199,7 @@ final class AcfLintBinTest extends TestCase {
             $r = $this->runBin('--wpml', '--strict', $file);
             $this->assertSame(1, $r['exit'], 'the error still fails the build');
             $this->assertStringContainsString('required by --wpml: missing on field', $r['stderr']);
-            $this->assertStringContainsString('notice: link at 1', $r['stderr']);
+            $this->assertStringContainsString('link at 1 (Copy)', $r['stderr']);
         } finally {
             @unlink($file);
             @rmdir($dir);

@@ -293,6 +293,14 @@ final class AcfLinter {
     /**
      * `link` leaves at `1` (Copy) — a question, not a verdict.
      *
+     * WHOSE BEHAVIOUR THIS DESCRIBES. Not ACFML's: the plugin has no
+     * render-time sync for block attributes. It is the consuming theme's, and
+     * the description below is `parisek/timber-kit`'s
+     * (`WpmlBlockOverride` + `Helpers::formatLink()`), which is where the
+     * measurement comes from. A project on a different renderer keeps the
+     * notice's question — is this link identical in every language? — and
+     * should read its own package for the mechanics.
+     *
      * A link's preference decides two different things at render time, and a
      * field definition shows neither:
      *
@@ -318,12 +326,14 @@ final class AcfLinter {
      * census in #30 shows the shape (`685 × 2` against `7 × 1`), which is a
      * reason to ask, not to fail. Hence {@see FileLintResult::$notices}.
      *
-     * Two things worth knowing while answering, both from the consuming
-     * package rather than from doctrine. `target: "_blank"` is an opt-out from
-     * the URL rewrite, by design: the formatter returns on it before the
+     * Two things worth knowing while answering, both from that theme rather
+     * than from doctrine. At `2`, `target: "_blank"` is an opt-out from the
+     * URL rewrite by design — the formatter returns on it before the
      * preference is read, which is how an editor keeps a link exactly as
-     * stored. And a link's title is never translated at render, so a title
-     * that has to differ per language needs `2` and its own per-language
+     * stored. At `1` it is no protection at all: the Copy sync runs before the
+     * formatter and never looks at the target, so it replaces a `_blank` link
+     * like any other. And a link's title is never translated at render, so a
+     * title that has to differ per language needs `2` and its own per-language
      * value whatever the URL does.
      *
      * @return array<string, string> JSON-pointer => message
@@ -353,11 +363,12 @@ final class AcfLinter {
             $ptr = $base . '/' . $i;
 
             if (($field->type ?? null) === 'link' && ($field->wpml_cf_preferences ?? null) === 1) {
-                $out[$ptr . '/wpml_cf_preferences'] = 'notice: link at 1 (Copy) renders the SOURCE language\'s '
-                    . 'url, title and target on every translation, and nothing translates them afterwards. '
-                    . 'Keep 1 only when the whole rendered link is identical in every language (an external '
-                    . 'profile, an app-store listing, an on-page anchor). Use 2 when the URL can point at '
-                    . 'translatable site content, or when the title differs per language — and note that a '
+                $out[$ptr . '/wpml_cf_preferences'] = 'notice: with a theme that syncs Copy fields at '
+                    . 'render (parisek/timber-kit and the like), link at 1 (Copy) renders the SOURCE '
+                    . 'language\'s url, title and target on every translation, and nothing translates them '
+                    . 'afterwards. Keep 1 only when the whole rendered link is identical in every language '
+                    . '(an external profile, an app-store listing, an on-page anchor). Use 2 when the URL '
+                    . 'can point at translatable site content, or when the title differs per language — a '
                     . 'title is never translated at render, so it needs its own value per language either way.';
             }
 
