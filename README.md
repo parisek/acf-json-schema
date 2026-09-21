@@ -60,11 +60,41 @@ vendor/bin/acf-lint --strict path/to/templates path/to/blocks
 
 | Flag | Effect |
 |---|---|
-| `--strict` | Exit non-zero on any finding (CI gate). |
+| `--strict` | Exit non-zero on any **error** (CI gate). Notices never affect the exit code — see below. |
 | `--fix` | Bump stale/missing `modified` timestamps. |
 | `--wpml` | Require WPML/ACFML translation keys to be **present**: `acfml_field_group_mode` on each field group and `wpml_cf_preferences` on every value-holding field (recurses into repeater/group/flexible-content; `tab`/`message`/`accordion` are exempt). Opt-in — the schemas keep these keys optional so non-WPML projects are unaffected. |
-| `--format=<f>` | `text` (default; findings on stderr, summary on stdout), `json` (one machine-readable document on stdout), or `github` (GitHub Actions `::error` annotations — findings appear inline on the PR diff). |
+| `--format=<f>` | `text` (default; findings on stderr, summary on stdout), `json` (one machine-readable document on stdout), or `github` (GitHub Actions `::error` / `::notice` annotations — findings appear inline on the PR diff). |
 | `--max-errors=<N>` | Cap schema errors collected per file (default 50). |
+
+### Notices
+
+A **notice** is a finding the linter can only raise as a question, so it never
+makes a file invalid and never changes the exit code — not even under
+`--strict`. It prints alongside the errors (`•` in text, `notices` in the JSON
+document, `::notice` in GitHub Actions).
+
+One exists today, under `--wpml`: a `link` field set to
+`wpml_cf_preferences: 1` (Copy). What `1` and `2` then do to a link is decided
+by the theme that renders the block, not by this package — the description
+below is `parisek/timber-kit`'s, which is where the measurement comes from. At
+`1` its Copy sync replaces the whole stored value — url, title, target — with
+the **source language's**, and nothing translates it afterwards, so a
+translation's own correct URL is discarded. At `2` the URL is resolved to a
+post and rebuilt in the language being rendered.
+Which one is right depends on the values an editor will put in the field, and
+the field definition does not carry them: the same `type: link` accepts an
+internal URL, an external one, an anchor and a `mailto:`. So the linter asks
+instead of deciding — keep `1` when the whole rendered link is identical in
+every language, use `2` when the URL can point at translatable site content or
+the title differs per language.
+
+Two properties of that theme are worth knowing while answering. A link rendered
+with `target="_blank"` is left exactly as stored at `2` — the theme uses the new
+tab as an opt-out from the URL rewrite — while at `1` the Copy sync replaces it
+like any other field, target included, because the sync runs before the
+formatter and never looks at it. And a link's title is never translated at
+render, so a title that differs per language needs its own value per language
+regardless of the preference.
 
 Text output is colored only on a TTY; set `NO_COLOR` to force plain output. Example CI step with inline PR annotations:
 

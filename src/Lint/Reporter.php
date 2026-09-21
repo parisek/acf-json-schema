@@ -37,12 +37,23 @@ final class Reporter {
     private function renderText(array $results): array {
         $stderr = '';
         foreach ($results as $r) {
-            if ($r->skipped || $r->valid) {
+            if ($r->skipped) {
                 continue;
             }
-            $stderr .= $this->paint('✗', '31') . " {$r->path} ({$r->kind})\n";
-            foreach ($r->errors as $pointer => $message) {
-                $stderr .= '    ' . $this->paint((string) $pointer, '33') . ' — ' . self::stringify($message) . "\n";
+            if (!$r->valid) {
+                $stderr .= $this->paint('✗', '31') . " {$r->path} ({$r->kind})\n";
+                foreach ($r->errors as $pointer => $message) {
+                    $stderr .= '    ' . $this->paint((string) $pointer, '33') . ' — ' . self::stringify($message) . "\n";
+                }
+            }
+            // Notices print for a VALID file too — that is the only state they
+            // can appear in for a project whose errors are already clean, and
+            // the state where someone is most likely to read them.
+            if ($r->notices !== []) {
+                $stderr .= $this->paint('•', '36') . " {$r->path} ({$r->kind})\n";
+                foreach ($r->notices as $pointer => $message) {
+                    $stderr .= '    ' . $this->paint((string) $pointer, '36') . ' — ' . self::stringify($message) . "\n";
+                }
             }
         }
         return ['stdout' => $this->summaryLine($results) . "\n", 'stderr' => $stderr];
@@ -59,6 +70,10 @@ final class Reporter {
             foreach ($r->errors as $pointer => $message) {
                 $errors[(string) $pointer] = self::stringify($message);
             }
+            $notices = [];
+            foreach ($r->notices as $pointer => $message) {
+                $notices[(string) $pointer] = self::stringify($message);
+            }
             $files[] = [
                 'path' => $r->path,
                 'kind' => $r->kind,
@@ -66,6 +81,7 @@ final class Reporter {
                 'skipped' => $r->skipped,
                 'fixed' => $r->fixed,
                 'errors' => $errors === [] ? new \stdClass() : $errors,
+                'notices' => $notices === [] ? new \stdClass() : $notices,
             ];
         }
         $s = $this->summarize($results);
@@ -78,6 +94,7 @@ final class Reporter {
                 'errors' => $s['errors'],
                 'fixed' => $s['fixed'],
                 'skipped' => $s['skipped'],
+                'notices' => $s['notices'],
             ],
         ];
         return ['stdout' => Json::encode($doc), 'stderr' => ''];
@@ -99,6 +116,16 @@ final class Reporter {
                     . '::' . self::escapeGithubData($text) . "\n";
             }
         }
+        foreach ($results as $r) {
+            if ($r->skipped) {
+                continue;
+            }
+            foreach ($r->notices as $pointer => $message) {
+                $text = $pointer . ' — ' . self::stringify($message);
+                $stdout .= '::notice file=' . self::escapeGithubProperty($r->path)
+                    . '::' . self::escapeGithubData($text) . "\n";
+            }
+        }
         $stdout .= $this->summaryLine($results, forceNoColor: true) . "\n";
         return ['stdout' => $stdout, 'stderr' => ''];
     }
@@ -117,15 +144,18 @@ final class Reporter {
         if ($s['skipped'] > 0) {
             $line .= ", {$s['skipped']} skipped";
         }
+        if ($s['notices'] > 0) {
+            $line .= ', ' . $paint($s['notices'] . ' ' . ($s['notices'] === 1 ? 'notice' : 'notices'), '36');
+        }
         return $line;
     }
 
     /**
      * @param list<FileLintResult> $results
-     * @return array{scanned: int, ok: int, errorFiles: int, errors: int, fixed: int, skipped: int}
+     * @return array{scanned: int, ok: int, errorFiles: int, errors: int, fixed: int, skipped: int, notices: int}
      */
     private function summarize(array $results): array {
-        $ok = $errorFiles = $errors = $fixed = $skipped = 0;
+        $ok = $errorFiles = $errors = $fixed = $skipped = $notices = 0;
         foreach ($results as $r) {
             if ($r->fixed) {
                 $fixed++;
@@ -134,6 +164,7 @@ final class Reporter {
                 $skipped++;
                 continue;
             }
+            $notices += count($r->notices);
             if ($r->valid) {
                 $ok++;
                 continue;
@@ -148,6 +179,7 @@ final class Reporter {
             'errors' => $errors,
             'fixed' => $fixed,
             'skipped' => $skipped,
+            'notices' => $notices,
         ];
     }
 

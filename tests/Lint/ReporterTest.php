@@ -46,13 +46,34 @@ final class ReporterTest extends TestCase {
         $this->assertCount(4, $doc['files']);
         $this->assertSame(
             ['path' => 'b/acf.json', 'kind' => 'acf', 'valid' => false, 'skipped' => false, 'fixed' => false,
-             'errors' => ['/fields/0' => 'The required properties (type) are missing']],
+             'errors' => ['/fields/0' => 'The required properties (type) are missing'], 'notices' => []],
             $doc['files'][1],
         );
         $this->assertSame(
-            ['scanned' => 4, 'ok' => 2, 'filesWithErrors' => 1, 'errors' => 1, 'fixed' => 1, 'skipped' => 1],
+            ['scanned' => 4, 'ok' => 2, 'filesWithErrors' => 1, 'errors' => 1, 'fixed' => 1, 'skipped' => 1, 'notices' => 0],
             $doc['summary'],
         );
+    }
+
+    public function test_notices_render_in_every_format_without_touching_validity(): void {
+        $results = [new FileLintResult('n/acf.json', 'acf', true, [], false, false, [
+            '/fields/0/wpml_cf_preferences' => 'notice: link at 1 (Copy) …',
+        ])];
+
+        $text = (new Reporter(color: false))->render($results, 'text');
+        $this->assertStringContainsString('notice: link at 1', $text['stderr']);
+        // One notice, singular, and the file still counts as OK.
+        $this->assertStringContainsString('1 files scanned, 1 OK, 1 notice', $text['stdout']);
+
+        $json = json_decode((new Reporter(color: false))->render($results, 'json')['stdout'], true);
+        $this->assertIsArray($json);
+        $this->assertTrue($json['files'][0]['valid']);
+        $this->assertSame(1, $json['summary']['notices']);
+        $this->assertSame(0, $json['summary']['filesWithErrors']);
+
+        $gh = (new Reporter(color: false))->render($results, 'github')['stdout'];
+        $this->assertStringContainsString('::notice file=n/acf.json::', $gh);
+        $this->assertStringNotContainsString('::error', $gh);
     }
 
     public function test_github_format_emits_workflow_commands(): void {

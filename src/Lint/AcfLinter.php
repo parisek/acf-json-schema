@@ -104,13 +104,15 @@ final class AcfLinter {
             }
         }
 
+        $notices = [];
         if ($requireWpml && $kind === 'acf') {
             $errors = array_merge($errors, $this->wpmlPresenceFindings($json));
             $errors = array_merge($errors, $this->wpmlLocationValueFindings($json));
             $errors = array_merge($errors, $this->wpmlTypeValueFindings($json));
+            $notices = $this->wpmlLinkPreferenceNotices($json);
         }
 
-        return new FileLintResult($path, $kind, $result->isValid() && $errors === [], $errors, $fixed, false);
+        return new FileLintResult($path, $kind, $result->isValid() && $errors === [], $errors, $fixed, false, $notices);
     }
 
     /**
@@ -282,6 +284,105 @@ final class AcfLinter {
                 foreach ($layouts as $lk => $layout) {
                     if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
                         $this->walkFieldsWpmlTypeValue($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $out);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * `link` leaves at `1` (Copy) — a question, not a verdict.
+     *
+     * WHOSE BEHAVIOUR THIS DESCRIBES. Not ACFML's: the plugin has no
+     * render-time sync for block attributes. It is the consuming theme's, and
+     * the description below is `parisek/timber-kit`'s
+     * (`WpmlBlockOverride` + `Helpers::formatLink()`), which is where the
+     * measurement comes from. A project on a different renderer keeps the
+     * notice's question — is this link identical in every language? — and
+     * should read its own package for the mechanics.
+     *
+     * A link's preference decides two different things at render time, and a
+     * field definition shows neither:
+     *
+     * - `2` sends the URL through the consuming theme's link formatter, which
+     *   resolves it to a post and rebuilds the permalink in the language being
+     *   rendered. A URL that names translatable site content therefore follows
+     *   the visitor's language.
+     * - `1` is Copy: the block-render sync replaces the WHOLE stored value —
+     *   url, title, target — with the source language's, and nothing
+     *   translates it afterwards. A correct per-language value in a
+     *   translation is discarded.
+     *
+     * So `1` is right only when every rendered part of the link is identical
+     * in every language. Measured on a five-language site: two link fields at
+     * `1`, 8 links across 4 translated pages, all pointing into the source
+     * language while the database held the right URL for each one. Nothing
+     * errored; the data was correct and only the render was wrong.
+     *
+     * NOT an error, deliberately. `1` stays legitimate — an external profile,
+     * an app-store listing, an on-page anchor — and no static check can tell
+     * those from the broken case: the same `type: link` definition accepts an
+     * internal URL, an external one, an anchor and a `mailto:`. The fleet
+     * census in #30 shows the shape (`685 × 2` against `7 × 1`), which is a
+     * reason to ask, not to fail. Hence {@see FileLintResult::$notices}.
+     *
+     * Two things worth knowing while answering, both from that theme rather
+     * than from doctrine. At `2`, `target: "_blank"` is an opt-out from the
+     * URL rewrite by design — the formatter returns on it before the
+     * preference is read, which is how an editor keeps a link exactly as
+     * stored. At `1` it is no protection at all: the Copy sync runs before the
+     * formatter and never looks at the target, so it replaces a `_blank` link
+     * like any other. And a link's title is never translated at render, so a
+     * title that has to differ per language needs `2` and its own per-language
+     * value whatever the URL does.
+     *
+     * @return array<string, string> JSON-pointer => message
+     */
+    public function wpmlLinkPreferenceNotices(object $json): array {
+        $out = [];
+        $fields = $json->fields ?? null;
+        if (is_array($fields)) {
+            $this->walkFieldsWpmlLinkPreference($fields, '/fields', $out);
+        }
+        return $out;
+    }
+
+    /**
+     * Recurse fields + nested sub_fields + flexible-content layouts — same
+     * walker shape as {@see walkFieldsWpmlTypeValue()} — collecting the
+     * `link`-at-`1` notices described there.
+     *
+     * @param array<int|string, mixed> $fields
+     * @param array<string, string>    $out
+     */
+    private function walkFieldsWpmlLinkPreference(array $fields, string $base, array &$out): void {
+        foreach ($fields as $i => $field) {
+            if (!$field instanceof \stdClass) {
+                continue;
+            }
+            $ptr = $base . '/' . $i;
+
+            if (($field->type ?? null) === 'link' && ($field->wpml_cf_preferences ?? null) === 1) {
+                $out[$ptr . '/wpml_cf_preferences'] = 'notice: with a theme that syncs Copy fields at '
+                    . 'render (parisek/timber-kit and the like), link at 1 (Copy) renders the SOURCE '
+                    . 'language\'s url, title and target on every translation, and nothing translates them '
+                    . 'afterwards. Keep 1 only when the whole rendered link is identical in every language '
+                    . '(an external profile, an app-store listing, an on-page anchor). Use 2 when the URL '
+                    . 'can point at translatable site content, or when the title differs per language — a '
+                    . 'title is never translated at render, so it needs its own value per language either way.';
+            }
+
+            if (isset($field->sub_fields) && is_array($field->sub_fields)) {
+                $this->walkFieldsWpmlLinkPreference($field->sub_fields, $ptr . '/sub_fields', $out);
+            }
+            $layouts = $field->layouts ?? null;
+            if ($layouts instanceof \stdClass) {
+                $layouts = (array) $layouts;
+            }
+            if (is_array($layouts)) {
+                foreach ($layouts as $lk => $layout) {
+                    if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
+                        $this->walkFieldsWpmlLinkPreference($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $out);
                     }
                 }
             }
