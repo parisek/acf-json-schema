@@ -109,7 +109,8 @@ final class AcfLinter {
             $errors = array_merge($errors, $this->wpmlPresenceFindings($json));
             $errors = array_merge($errors, $this->wpmlLocationValueFindings($json));
             $errors = array_merge($errors, $this->wpmlTypeValueFindings($json));
-            $notices = $this->wpmlLinkPreferenceNotices($json);
+            $errors = array_merge($errors, $this->wpmlModeDefaultFindings($json));
+            $notices = array_merge($this->wpmlLinkPreferenceNotices($json), $this->wpmlModeNotices($json));
         }
 
         return new FileLintResult($path, $kind, $result->isValid() && $errors === [], $errors, $fixed, false, $notices);
@@ -185,15 +186,13 @@ final class AcfLinter {
      * flagged by two of these checks at once, so there is no double-report
      * risk to guard against structurally.
      *
-     * Layer 1 — `repeater` / `flexible_content` MUST be `3`. This is a
-     * plugin FACT, not doctrine: ACFML forcibly overrides these two types
-     * to `WPML_COPY_ONCE_CUSTOM_FIELD` (`= 3`, defined in
-     * sitepress-multilingual-cms/inc/constants.php) at runtime regardless
-     * of the configured value — see `ACFML\Helper\Fields::WRAPPER_FIELDS`
-     * (acfml/classes/Helper/Fields.php:10) and
-     * `WPML_ACF_Field_Settings::field_should_be_set_to_copy_once()`
-     * (acfml/classes/class-wpml-acf-field-settings.php:335-341). Any other
-     * configured value is provably dead configuration.
+     * Layer 1 — `repeater` / `flexible_content` take `1` or `3`. This is
+     * doctrine, not a plugin fact: ACFML does not force either value on a
+     * post/block field group (`field_should_be_set_to_copy_once()` only
+     * widens `is_field_parsable()`; `save_field_settings()` writes the
+     * configured value). `1` carries the row-count meta ACF reads first;
+     * `3` omits it. Whether either keeps translated rows aligned depends on
+     * the group's mode — see {@see wpmlModeNotices()}.
      *
      * Layer 2 — `group` SHOULD be `3` per this project's own doctrine
      * (gutenberg.md § Key Requirements: "`3` only on group containers
@@ -216,8 +215,13 @@ final class AcfLinter {
     public function wpmlTypeValueFindings(object $json): array {
         $out = [];
         $fields = $json->fields ?? null;
+        // Layer 2 is doctrine for Expert groups only. In a mode that manages
+        // preferences ACFML sets `group` itself, and
+        // {@see wpmlModeDefaultFindings()} already demands that value.
+        $mode = $json->acfml_field_group_mode ?? null;
+        $expert = !is_string($mode) || AcfmlModeDefaults::preference($mode, 'group') === null;
         if (is_array($fields)) {
-            $this->walkFieldsWpmlTypeValue($fields, '/fields', $out);
+            $this->walkFieldsWpmlTypeValue($fields, '/fields', $expert, $out);
         }
         return $out;
     }
@@ -230,7 +234,7 @@ final class AcfLinter {
      * @param array<int|string, mixed> $fields
      * @param array<string, string>    $out
      */
-    private function walkFieldsWpmlTypeValue(array $fields, string $base, array &$out): void {
+    private function walkFieldsWpmlTypeValue(array $fields, string $base, bool $expert, array &$out): void {
         // Wrapper containers. NOT a plugin fact: ACFML does not force these to
         // any value. `field_should_be_set_to_copy_once()` only widens
         // `is_field_parsable()`; `save_field_settings()` then writes the
@@ -257,7 +261,7 @@ final class AcfLinter {
                     $type,
                     $pref === null ? 'absent' : var_export($pref, true),
                 );
-            } elseif ($type === 'group' && $pref !== 3) {
+            } elseif ($expert && $type === 'group' && $pref !== 3) {
                 $out[$ptr . '/wpml_cf_preferences'] = sprintf(
                     'required by --wpml (doctrine, not a plugin fact): group containers should be 3 per '
                         . 'gutenberg.md § Key Requirements ("3 only on group containers whose nested leaves '
@@ -274,7 +278,7 @@ final class AcfLinter {
             }
 
             if (isset($field->sub_fields) && is_array($field->sub_fields)) {
-                $this->walkFieldsWpmlTypeValue($field->sub_fields, $ptr . '/sub_fields', $out);
+                $this->walkFieldsWpmlTypeValue($field->sub_fields, $ptr . '/sub_fields', $expert, $out);
             }
             $layouts = $field->layouts ?? null;
             if ($layouts instanceof \stdClass) {
@@ -283,7 +287,7 @@ final class AcfLinter {
             if (is_array($layouts)) {
                 foreach ($layouts as $lk => $layout) {
                     if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
-                        $this->walkFieldsWpmlTypeValue($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $out);
+                        $this->walkFieldsWpmlTypeValue($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $expert, $out);
                     }
                 }
             }
@@ -681,6 +685,164 @@ final class AcfLinter {
             0 => 'ignore (0) keeps the field out of translation entirely — use 1 to share one asset across languages, or 3 when the editor re-authors the image per language',
             default => 'use 1 to share one asset across languages, or 3 when the editor re-authors the image per language',
         };
+    }
+
+    /**
+     * A field group in `translation` or `localization` mode hands the field
+     * preferences to ACFML: saving the group in wp-admin rewrites every
+     * `wpml_cf_preferences` to the mode's default ({@see AcfmlModeDefaults}).
+     * A JSON value that differs describes behaviour the site keeps only until
+     * that save, so it is an error, not a notice. A field that genuinely has
+     * to differ belongs in an `advanced` group.
+     *
+     * @return array<string, string> JSON-pointer => message
+     */
+    public function wpmlModeDefaultFindings(object $json): array {
+        $out = [];
+        $mode = $json->acfml_field_group_mode ?? null;
+        if (!is_string($mode) || AcfmlModeDefaults::preference($mode, 'text') === null) {
+            return $out;
+        }
+        $fields = $json->fields ?? null;
+        if (is_array($fields)) {
+            $this->walkFieldsWpmlModeDefault($fields, '/fields', $mode, $out);
+        }
+        return $out;
+    }
+
+    /**
+     * @param array<int|string, mixed> $fields
+     * @param array<string, string>    $out
+     */
+    private function walkFieldsWpmlModeDefault(array $fields, string $base, string $mode, array &$out): void {
+        foreach ($fields as $i => $field) {
+            if (!$field instanceof \stdClass) {
+                continue;
+            }
+            $ptr = $base . '/' . $i;
+            $type = is_string($field->type ?? null) ? $field->type : '';
+            $pref = $field->wpml_cf_preferences ?? null;
+            $expected = AcfmlModeDefaults::preference($mode, $type);
+
+            if ($expected !== null && is_int($pref) && $pref !== $expected) {
+                $out[$ptr . '/wpml_cf_preferences'] = sprintf(
+                    'required by --wpml: in a "%s" field group ACFML rewrites %s to %d on the next field-group '
+                        . 'save in wp-admin (got %d) — use %d, or move the field to an "advanced" group if it has to differ',
+                    $mode,
+                    $type,
+                    $expected,
+                    $pref,
+                    $expected,
+                );
+            }
+
+            if (isset($field->sub_fields) && is_array($field->sub_fields)) {
+                $this->walkFieldsWpmlModeDefault($field->sub_fields, $ptr . '/sub_fields', $mode, $out);
+            }
+            $layouts = $field->layouts ?? null;
+            if ($layouts instanceof \stdClass) {
+                $layouts = (array) $layouts;
+            }
+            if (is_array($layouts)) {
+                foreach ($layouts as $lk => $layout) {
+                    if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
+                        $this->walkFieldsWpmlModeDefault($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $mode, $out);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * An `advanced` (Expert) field group on posts or terms that holds a
+     * repeater or flexible content — a question, not a verdict.
+     *
+     * ACFML keeps a translation's rows in step with the original (a row
+     * moved or removed in the original moves or goes in every translation,
+     * with the translated text kept) only in `translation` mode, or in Expert
+     * mode on the single posts where an editor ticked "Synchronise
+     * translations". Without it, both container preferences fail:
+     *
+     * - `3` (Copy once) freezes the row list at the first translation, so a
+     *   row added to the original later never reaches it;
+     * - `1` (Copy) copies the new row list over rows that did not move, so
+     *   translated text lands under the wrong row.
+     *
+     * Measured on fellows (ACFML 5.0.0): an inserted layout left the Czech
+     * room type unchanged at `3`, and at `1` put every Czech block after the
+     * insert one row off. `translation` mode kept the Czech rows aligned on a
+     * reorder and held the insert back for the translator.
+     *
+     * NOT an error: an Expert group can carry a field that must differ from
+     * ACFML's default (an external ID at Copy, say), and only the author knows
+     * whether the synchronisation matters for its containers. Options pages
+     * are out of scope (they follow their own per-field rule), and so are
+     * blocks, whose rows live in post content rather than in post meta — not
+     * measured there.
+     *
+     * @return array<string, string> JSON-pointer => message
+     */
+    public function wpmlModeNotices(object $json): array {
+        if (($json->acfml_field_group_mode ?? null) !== 'advanced') {
+            return [];
+        }
+        $location = $json->location ?? null;
+        if (!is_array($location) || !$this->targetsOnlyPostsOrTerms($location)) {
+            return [];
+        }
+        $fields = $json->fields ?? null;
+        if (!is_array($fields) || !$this->hasRowContainer($fields)) {
+            return [];
+        }
+        return [
+            '/acfml_field_group_mode' => 'notice: this "advanced" group holds a repeater or flexible content on posts '
+                . 'or terms. ACFML keeps translated rows in step with the original only in "translation" mode, or on '
+                . 'posts where an editor ticked "Synchronise translations". Without it, a container at 3 (Copy once) '
+                . 'never receives rows added later, and a container at 1 (Copy) puts translated text under the wrong '
+                . 'row. Use "translation" unless a field in the group must differ from ACFML\'s default.',
+        ];
+    }
+
+    /**
+     * True when every OR-group of $location targets posts or taxonomy terms,
+     * and none targets a block, an options page or another context.
+     *
+     * @param array<int|string, mixed> $location
+     */
+    private function targetsOnlyPostsOrTerms(array $location): bool {
+        $allowed = array_merge(['post_type', 'taxonomy'], self::POST_CONTEXT_QUALIFIER_PARAMS, self::NEUTRAL_PARAMS);
+        $sawTarget = false;
+        foreach ($location as $orGroup) {
+            $rules = $orGroup instanceof \stdClass ? (array) $orGroup : (is_array($orGroup) ? $orGroup : []);
+            foreach ($rules as $rule) {
+                $param = $rule instanceof \stdClass ? ($rule->param ?? null) : (is_array($rule) ? ($rule['param'] ?? null) : null);
+                if (!is_string($param) || !in_array($param, $allowed, true)) {
+                    return false;
+                }
+                if ($param === 'post_type' || $param === 'taxonomy') {
+                    $sawTarget = true;
+                }
+            }
+        }
+        return $sawTarget;
+    }
+
+    /**
+     * @param array<int|string, mixed> $fields
+     */
+    private function hasRowContainer(array $fields): bool {
+        foreach ($fields as $field) {
+            if (!$field instanceof \stdClass) {
+                continue;
+            }
+            if (in_array($field->type ?? null, ['repeater', 'flexible_content'], true)) {
+                return true;
+            }
+            if (isset($field->sub_fields) && is_array($field->sub_fields) && $this->hasRowContainer($field->sub_fields)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

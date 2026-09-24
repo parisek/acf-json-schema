@@ -62,7 +62,7 @@ vendor/bin/acf-lint --strict path/to/templates path/to/blocks
 |---|---|
 | `--strict` | Exit non-zero on any **error** (CI gate). Notices never affect the exit code — see below. |
 | `--fix` | Bump stale/missing `modified` timestamps. |
-| `--wpml` | Require WPML/ACFML translation keys to be **present**: `acfml_field_group_mode` on each field group and `wpml_cf_preferences` on every value-holding field (recurses into repeater/group/flexible-content; `tab`/`message`/`accordion` are exempt). Opt-in — the schemas keep these keys optional so non-WPML projects are unaffected. |
+| `--wpml` | Require WPML/ACFML translation keys to be **present**: `acfml_field_group_mode` on each field group and `wpml_cf_preferences` on every value-holding field (recurses into repeater/group/flexible-content; `tab`/`message`/`accordion` are exempt). In a `translation`/`localization` group it also requires each preference to equal ACFML's mode default, and it notices an `advanced` post/term group that holds a repeater or flexible content. Opt-in — the schemas keep these keys optional so non-WPML projects are unaffected. |
 | `--format=<f>` | `text` (default; findings on stderr, summary on stdout), `json` (one machine-readable document on stdout), or `github` (GitHub Actions `::error` / `::notice` annotations — findings appear inline on the PR diff). |
 | `--max-errors=<N>` | Cap schema errors collected per file (default 50). |
 

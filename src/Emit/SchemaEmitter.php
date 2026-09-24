@@ -48,7 +48,8 @@ final class SchemaEmitter {
             // acfml_field_group_mode is intentionally NOT required: ACF only emits
             // it when ACFML (WPML) is active, so plain-ACF exports omit it. It is
             // still value-constrained in 'properties' below, so when present it
-            // must be "advanced" (required-only-when-present semantics).
+            // must be one of ACFML's three modes (required-only-when-present
+            // semantics).
             'required' => ['key', 'title', 'fields', 'location', 'modified', 'active'],
             'properties' => [
                 'key'    => ['type' => 'string', 'pattern' => '^group_'],
@@ -76,7 +77,7 @@ final class SchemaEmitter {
                 'active'                => ['type' => 'boolean'],
                 'description'           => ['type' => 'string', 'maxLength' => 0],
                 'modified'              => ['type' => 'integer', 'minimum' => 0],
-                'acfml_field_group_mode' => ['const' => 'advanced'],
+                'acfml_field_group_mode' => ['enum' => ['advanced', 'translation', 'localization']],
                 'show_in_rest'          => ['enum' => [0, 1, true, false]],
             ],
         ];
