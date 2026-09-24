@@ -81,7 +81,11 @@
             "minimum": 0
         },
         "acfml_field_group_mode": {
-            "const": "advanced"
+            "enum": [
+                "advanced",
+                "translation",
+                "localization"
+            ]
         },
         "show_in_rest": {
             "enum": [

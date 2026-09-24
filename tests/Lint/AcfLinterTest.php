@@ -1012,4 +1012,192 @@ final class AcfLinterTest extends TestCase {
 
         self::assertSame([], $r->notices);
     }
+
+    public function test_schema_accepts_every_acfml_mode(): void {
+        foreach (['advanced', 'translation', 'localization'] as $mode) {
+            $r = $this->lintAcf(self::group(['acfml_field_group_mode' => $mode]), false);
+            self::assertTrue($r->valid, $mode . ': ' . (string) json_encode($r->errors));
+        }
+    }
+
+    public function test_schema_rejects_an_unknown_acfml_mode(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'expert']), false);
+        self::assertFalse($r->valid);
+    }
+
+    /**
+     * ACFML rewrites every preference to the mode default when a
+     * `translation` group is saved in wp-admin, so a JSON value that differs
+     * is an error.
+     */
+    public function test_wpml_translation_mode_rejects_a_preference_acfml_would_rewrite(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'translation'], [
+            ['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+        ]), true);
+        self::assertFalse($r->valid);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+        self::assertStringContainsString('rewrites text to 2', (string) $r->errors['/fields/0/wpml_cf_preferences']);
+    }
+
+    public function test_wpml_translation_mode_passes_with_acfml_defaults_at_every_depth(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'translation'], [
+            [
+                'key' => 'field_g', 'label' => 'G', 'name' => 'g', 'type' => 'group', 'allow_in_bindings' => 0,
+                'wpml_cf_preferences' => 1,
+                'sub_fields' => [
+                    [
+                        'key' => 'field_f', 'label' => 'F', 'name' => 'f', 'type' => 'flexible_content', 'allow_in_bindings' => 0,
+                        'wpml_cf_preferences' => 1,
+                        'layouts' => [
+                            'layout_a' => [
+                                'key' => 'layout_a', 'name' => 'a', 'label' => 'A', 'display' => 'block',
+                                'sub_fields' => [
+                                    ['key' => 'field_t', 'label' => 'T', 'name' => 't', 'type' => 'wysiwyg', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+                                    ['key' => 'field_i', 'label' => 'I', 'name' => 'i', 'type' => 'image', 'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => 1],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+        self::assertSame([], $r->notices);
+    }
+
+    public function test_wpml_translation_mode_reaches_layout_fields(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'translation'], [
+            [
+                'key' => 'field_f', 'label' => 'F', 'name' => 'f', 'type' => 'flexible_content', 'allow_in_bindings' => 0,
+                'wpml_cf_preferences' => 3,
+                'layouts' => [
+                    'layout_a' => [
+                        'key' => 'layout_a', 'name' => 'a', 'label' => 'A', 'display' => 'block',
+                        'sub_fields' => [
+                            ['key' => 'field_s', 'label' => 'S', 'name' => 's', 'type' => 'select', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+                        ],
+                    ],
+                ],
+            ],
+        ]), true);
+        self::assertArrayHasKey('/fields/0/wpml_cf_preferences', $r->errors);
+        self::assertArrayHasKey('/fields/0/layouts/layout_a/sub_fields/0/wpml_cf_preferences', $r->errors);
+    }
+
+    public function test_wpml_localization_mode_expects_copy_once_on_copied_types(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'localization'], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater', 'allow_in_bindings' => 0,
+                'wpml_cf_preferences' => 3,
+                'sub_fields' => [
+                    ['key' => 'field_t', 'label' => 'T', 'name' => 't', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+                    ['key' => 'field_n', 'label' => 'N', 'name' => 'n', 'type' => 'number', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 1],
+                ],
+            ],
+        ]), true);
+        self::assertSame(['/fields/0/sub_fields/1/wpml_cf_preferences'], array_keys($r->errors));
+    }
+
+    public function test_wpml_advanced_post_group_with_a_repeater_emits_a_mode_notice(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater', 'allow_in_bindings' => 0,
+                'wpml_cf_preferences' => 3,
+                'sub_fields' => [
+                    ['key' => 'field_t', 'label' => 'T', 'name' => 't', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+                ],
+            ],
+        ]), true);
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+        self::assertArrayHasKey('/acfml_field_group_mode', $r->notices);
+        self::assertStringContainsString('notice:', $r->notices['/acfml_field_group_mode']);
+    }
+
+    public function test_wpml_advanced_post_group_without_a_repeater_is_silent(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            ['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+        ]), true);
+        self::assertSame([], $r->notices);
+    }
+
+    /**
+     * @return iterable<string, array{0: list<list<array<string, string>>>}>
+     */
+    public static function locationsOutsideTheModeNotice(): iterable {
+        yield 'block' => [[[['param' => 'block', 'operator' => '==', 'value' => 'acf/x']]]];
+        yield 'options page' => [[[['param' => 'options_page', 'operator' => '==', 'value' => 'x']]]];
+        yield 'post type or block' => [[
+            [['param' => 'post_type', 'operator' => '==', 'value' => 'post']],
+            [['param' => 'block', 'operator' => '==', 'value' => 'acf/x']],
+        ]];
+    }
+
+    /**
+     * @param list<list<array<string, string>>> $location
+     */
+    #[DataProvider('locationsOutsideTheModeNotice')]
+    public function test_wpml_mode_notice_stays_off_blocks_and_options_pages(array $location): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced', 'location' => $location], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater', 'allow_in_bindings' => 0,
+                'wpml_cf_preferences' => 3,
+                'sub_fields' => [
+                    ['key' => 'field_t', 'label' => 'T', 'name' => 't', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+                ],
+            ],
+        ]), true);
+        self::assertArrayNotHasKey('/acfml_field_group_mode', $r->notices);
+    }
+
+    public function test_wpml_mode_notice_covers_taxonomy_groups(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'taxonomy', 'operator' => '==', 'value' => 'category']]],
+        ], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater', 'allow_in_bindings' => 0,
+                'wpml_cf_preferences' => 1,
+                'sub_fields' => [
+                    ['key' => 'field_t', 'label' => 'T', 'name' => 't', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+                ],
+            ],
+        ]), true);
+        self::assertArrayHasKey('/acfml_field_group_mode', $r->notices);
+    }
+
+    /**
+     * Review finding: an options-page image in a managed mode met two rules
+     * that demanded different values, so every value failed.
+     */
+    public function test_wpml_managed_mode_options_page_image_is_checked_once(): void {
+        foreach (['translation' => 1, 'localization' => 3] as $mode => $pref) {
+            $r = $this->lintAcf(self::group([
+                'acfml_field_group_mode' => $mode,
+                'location' => [[['param' => 'options_page', 'operator' => '==', 'value' => 'x']]],
+            ], [
+                ['key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image', 'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => $pref],
+            ]), true);
+            self::assertTrue($r->valid, $mode . ': ' . (string) json_encode($r->errors));
+        }
+    }
+
+    /**
+     * Review finding: a location made only of post-context qualifiers is a
+     * post context, as the existing classifier already treats it.
+     */
+    public function test_wpml_mode_notice_covers_page_template_only_locations(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'page_template', 'operator' => '==', 'value' => 'templates/x.php']]],
+        ], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater', 'allow_in_bindings' => 0,
+                'wpml_cf_preferences' => 3,
+                'sub_fields' => [
+                    ['key' => 'field_t', 'label' => 'T', 'name' => 't', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+                ],
+            ],
+        ]), true);
+        self::assertArrayHasKey('/acfml_field_group_mode', $r->notices);
+    }
 }
