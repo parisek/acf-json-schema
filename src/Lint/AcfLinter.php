@@ -433,6 +433,13 @@ final class AcfLinter {
         if ($context === null) {
             return $out; // mixed or unrecognized location — ambiguous, don't guess
         }
+        // In a mode that manages preferences ACFML sets image/gallery itself,
+        // and {@see wpmlModeDefaultFindings()} demands that value. Checking
+        // the Expert-only location rule on top would make every value fail.
+        $mode = $json->acfml_field_group_mode ?? null;
+        if (is_string($mode) && AcfmlModeDefaults::preference($mode, 'image') !== null) {
+            return $out;
+        }
 
         $fields = $json->fields ?? null;
         if (is_array($fields)) {
@@ -727,7 +734,8 @@ final class AcfLinter {
             if ($expected !== null && is_int($pref) && $pref !== $expected) {
                 $out[$ptr . '/wpml_cf_preferences'] = sprintf(
                     'required by --wpml: in a "%s" field group ACFML rewrites %s to %d on the next field-group '
-                        . 'save in wp-admin (got %d) — use %d, or move the field to an "advanced" group if it has to differ',
+                        . 'save in wp-admin, unless the site filters acfml_field_group_mode_field_translation_preference '
+                        . '(got %d) — use %d, or move the field to an "advanced" group if it has to differ',
                     $mode,
                     $type,
                     $expected,
@@ -760,7 +768,7 @@ final class AcfLinter {
      * ACFML keeps a translation's rows in step with the original (a row
      * moved or removed in the original moves or goes in every translation,
      * with the translated text kept) only in `translation` mode, or in Expert
-     * mode on the single posts where an editor ticked "Synchronise
+     * mode on the single posts or terms where an editor ticked "Synchronise
      * translations". Without it, both container preferences fail:
      *
      * - `3` (Copy once) freezes the row list at the first translation, so a
@@ -797,7 +805,7 @@ final class AcfLinter {
         return [
             '/acfml_field_group_mode' => 'notice: this "advanced" group holds a repeater or flexible content on posts '
                 . 'or terms. ACFML keeps translated rows in step with the original only in "translation" mode, or on '
-                . 'posts where an editor ticked "Synchronise translations". Without it, a container at 3 (Copy once) '
+                . 'posts or terms where an editor ticked "Synchronise translations". Without it, a container at 3 (Copy once) '
                 . 'never receives rows added later, and a container at 1 (Copy) puts translated text under the wrong '
                 . 'row. Use "translation" unless a field in the group must differ from ACFML\'s default.',
         ];
@@ -819,7 +827,7 @@ final class AcfLinter {
                 if (!is_string($param) || !in_array($param, $allowed, true)) {
                     return false;
                 }
-                if ($param === 'post_type' || $param === 'taxonomy') {
+                if (!in_array($param, self::NEUTRAL_PARAMS, true)) {
                     $sawTarget = true;
                 }
             }

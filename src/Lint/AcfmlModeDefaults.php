@@ -13,7 +13,9 @@ namespace Parisek\AcfJsonSchema\Lint;
  * field's `wpml_cf_preferences` to this value
  * (`SaveHooks::overwriteAllFieldPreferencesWithGroupMode()`). A JSON value
  * that differs is therefore not a choice: it holds until the next admin save
- * and then silently changes. `advanced` (Expert) mode is the only one that
+ * and then silently changes. ACFML passes each default through the
+ * `acfml_field_group_mode_field_translation_preference` filter; a site that
+ * uses it gets a false finding here, and the table cannot know about it. `advanced` (Expert) mode is the only one that
  * keeps per-field values, so it has no row here.
  */
 final class AcfmlModeDefaults {

@@ -15,12 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   language has its own content").
 - **`--wpml` error: a preference ACFML would rewrite.** In a `translation` or
   `localization` group, ACFML rewrites every field's `wpml_cf_preferences` to
-  the mode's default when the group is saved in wp-admin. A JSON value that
-  differs now fails, with the value ACFML would write. The defaults mirror
+  the mode's default when the group is saved in wp-admin (unless the site
+  filters `acfml_field_group_mode_field_translation_preference`). A JSON value
+  that differs now fails, with the value ACFML would write. The image/gallery
+  location rule applies to `advanced` groups only, so the two never demand
+  different values. The defaults mirror
   ACFML 5.0.0 `ModeDefaults::MAP`.
 - **`--wpml` notice: an Expert group on posts or terms that holds a repeater
   or flexible content.** ACFML keeps translated rows in step with the original
-  only in `translation` mode, or on posts where an editor ticked "Synchronise
+  only in `translation` mode, or on posts or terms where an editor ticked "Synchronise
   translations". Without it, a container at `3` never receives rows added
   later, and a container at `1` puts translated text under the wrong row.
 

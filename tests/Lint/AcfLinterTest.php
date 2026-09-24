@@ -1164,4 +1164,40 @@ final class AcfLinterTest extends TestCase {
         ]), true);
         self::assertArrayHasKey('/acfml_field_group_mode', $r->notices);
     }
+
+    /**
+     * Review finding: an options-page image in a managed mode met two rules
+     * that demanded different values, so every value failed.
+     */
+    public function test_wpml_managed_mode_options_page_image_is_checked_once(): void {
+        foreach (['translation' => 1, 'localization' => 3] as $mode => $pref) {
+            $r = $this->lintAcf(self::group([
+                'acfml_field_group_mode' => $mode,
+                'location' => [[['param' => 'options_page', 'operator' => '==', 'value' => 'x']]],
+            ], [
+                ['key' => 'field_img', 'label' => 'Img', 'name' => 'img', 'type' => 'image', 'allow_in_bindings' => 0, 'return_format' => 'array', 'wpml_cf_preferences' => $pref],
+            ]), true);
+            self::assertTrue($r->valid, $mode . ': ' . (string) json_encode($r->errors));
+        }
+    }
+
+    /**
+     * Review finding: a location made only of post-context qualifiers is a
+     * post context, as the existing classifier already treats it.
+     */
+    public function test_wpml_mode_notice_covers_page_template_only_locations(): void {
+        $r = $this->lintAcf(self::group([
+            'acfml_field_group_mode' => 'advanced',
+            'location' => [[['param' => 'page_template', 'operator' => '==', 'value' => 'templates/x.php']]],
+        ], [
+            [
+                'key' => 'field_r', 'label' => 'R', 'name' => 'r', 'type' => 'repeater', 'allow_in_bindings' => 0,
+                'wpml_cf_preferences' => 3,
+                'sub_fields' => [
+                    ['key' => 'field_t', 'label' => 'T', 'name' => 't', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
+                ],
+            ],
+        ]), true);
+        self::assertArrayHasKey('/acfml_field_group_mode', $r->notices);
+    }
 }
