@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`--wpml` notice: a `text`, `textarea` or `wysiwyg` leaf at `3` or `0` in an
+  `advanced` group.** WPML recommends Translate (`2`) for these types. `3`
+  (Copy once) copies the source text once and never translates it, and `0`
+  (Ignore) keeps the field out of translation. The check was silent before:
+  it required only that the key exist on a value field. It is a notice, not an
+  error, because a project can choose `3` on purpose. `translation` and
+  `localization` groups are not checked here, since the mode-default error
+  already covers them. Containers and other leaf types are not checked.
+
 ## [0.8.0] - 2026-09-24
 
 ### Added

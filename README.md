@@ -62,7 +62,7 @@ vendor/bin/acf-lint --strict path/to/templates path/to/blocks
 |---|---|
 | `--strict` | Exit non-zero on any **error** (CI gate). Notices never affect the exit code — see below. |
 | `--fix` | Bump stale/missing `modified` timestamps. |
-| `--wpml` | Require WPML/ACFML translation keys to be **present**: `acfml_field_group_mode` on each field group and `wpml_cf_preferences` on every value-holding field (recurses into repeater/group/flexible-content; `tab`/`message`/`accordion` are exempt). In a `translation`/`localization` group it also requires each preference to equal ACFML's mode default, and it notices an `advanced` post/term group that holds a repeater or flexible content. Opt-in — the schemas keep these keys optional so non-WPML projects are unaffected. |
+| `--wpml` | Require WPML/ACFML translation keys to be **present**: `acfml_field_group_mode` on each field group and `wpml_cf_preferences` on every value-holding field (recurses into repeater/group/flexible-content; `tab`/`message`/`accordion` are exempt). In a `translation`/`localization` group it also requires each preference to equal ACFML's mode default, and it notices an `advanced` post/term group that holds a repeater or flexible content, and a `text`/`textarea`/`wysiwyg` leaf at `3` or `0` in an `advanced` group. Opt-in — the schemas keep these keys optional so non-WPML projects are unaffected. |
 | `--format=<f>` | `text` (default; findings on stderr, summary on stdout), `json` (one machine-readable document on stdout), or `github` (GitHub Actions `::error` / `::notice` annotations — findings appear inline on the PR diff). |
 | `--max-errors=<N>` | Cap schema errors collected per file (default 50). |
 
@@ -73,7 +73,9 @@ makes a file invalid and never changes the exit code — not even under
 `--strict`. It prints alongside the errors (`•` in text, `notices` in the JSON
 document, `::notice` in GitHub Actions).
 
-One exists today, under `--wpml`: a `link` field set to
+Two more exist under `--wpml`: an `advanced` post/term group that holds a repeater or flexible content, and a `text`, `textarea` or `wysiwyg` field set to `wpml_cf_preferences: 3` (Copy once) or `0` (Ignore) in an `advanced` group. WPML recommends Translate (`2`) for those types, and `3` copies the source text once and never translates it. Keep `3` or `0` when editors write each language by hand. A `translation` or `localization` group already fails on any value other than `2`, so it gets no notice.
+
+The first is a `link` field set to
 `wpml_cf_preferences: 1` (Copy). What `1` and `2` then do to a link is decided
 by the theme that renders the block, not by this package — the description
 below is `parisek/timber-kit`'s, which is where the measurement comes from. At
