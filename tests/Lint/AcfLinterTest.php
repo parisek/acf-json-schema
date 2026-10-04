@@ -1170,6 +1170,17 @@ final class AcfLinterTest extends TestCase {
         self::assertSame([], $r->notices, (string) json_encode($r->notices));
     }
 
+    /**
+     * The leaf notice is scoped to `advanced` groups. A missing or invalid mode
+     * already gets its own finding, so a leaf notice would only mislead.
+     */
+    public function test_wpml_leaf_notice_stays_silent_when_the_group_mode_is_missing_or_invalid(): void {
+        foreach ([[], ['acfml_field_group_mode' => 'bogus']] as $extra) {
+            $r = $this->lintAcf(self::group($extra, [self::leaf('text', 3)]), true);
+            self::assertArrayNotHasKey('/fields/0/wpml_cf_preferences', $r->notices, (string) json_encode($r->notices));
+        }
+    }
+
     public function test_wpml_leaf_notice_stays_silent_for_image_and_repeater_at_3(): void {
         $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced', 'location' => [[['param' => 'block', 'operator' => '==', 'value' => 'acf/x']]]], [
             self::leaf('image', 3, ['return_format' => 'array']),

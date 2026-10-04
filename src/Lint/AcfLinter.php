@@ -424,7 +424,7 @@ final class AcfLinter {
     public function wpmlTextLeafNotices(object $json): array {
         $out = [];
         $mode = $json->acfml_field_group_mode ?? null;
-        if (is_string($mode) && AcfmlModeDefaults::preference($mode, 'text') !== null) {
+        if ($mode !== 'advanced') {
             return $out;
         }
         $fields = $json->fields ?? null;
