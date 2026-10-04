@@ -110,7 +110,11 @@ final class AcfLinter {
             $errors = array_merge($errors, $this->wpmlLocationValueFindings($json));
             $errors = array_merge($errors, $this->wpmlTypeValueFindings($json));
             $errors = array_merge($errors, $this->wpmlModeDefaultFindings($json));
-            $notices = array_merge($this->wpmlLinkPreferenceNotices($json), $this->wpmlModeNotices($json));
+            $notices = array_merge(
+                $this->wpmlLinkPreferenceNotices($json),
+                $this->wpmlModeNotices($json),
+                $this->wpmlTextLeafNotices($json),
+            );
         }
 
         return new FileLintResult($path, $kind, $result->isValid() && $errors === [], $errors, $fixed, false, $notices);
@@ -387,6 +391,85 @@ final class AcfLinter {
                 foreach ($layouts as $lk => $layout) {
                     if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
                         $this->walkFieldsWpmlLinkPreference($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $out);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * `text`, `textarea` and `wysiwyg` leaves at `3` (Copy once) or `0`
+     * (Ignore) — a question, not a verdict.
+     *
+     * WPML recommends Translate (`2`) for these types, and ACFML sets `2`
+     * itself in `translation` and `localization` mode. `3` copies the source
+     * text once, when the translation is created, and never again; `0` keeps
+     * the field out of translation. Both are legitimate for a project that
+     * wants editors to write each language by hand, and the field definition
+     * does not say which one the author meant. A project that mixed up `3`
+     * with "Translate" gets a translation that starts as a copy of the source
+     * and stays untranslated.
+     *
+     * NOT an error: the value is a valid choice, and only the author knows the
+     * intent. Containers and other leaf types are out of scope — `3` is the
+     * doctrine value for containers and a normal choice for media.
+     *
+     * Runs only where per-field values are authoritative, that is in an
+     * `advanced` group. In `translation` and `localization` mode a value
+     * other than `2` already fails {@see wpmlModeDefaultFindings()}, so a
+     * notice would repeat that error.
+     *
+     * @return array<string, string> JSON-pointer => message
+     */
+    public function wpmlTextLeafNotices(object $json): array {
+        $out = [];
+        $mode = $json->acfml_field_group_mode ?? null;
+        if ($mode !== 'advanced') {
+            return $out;
+        }
+        $fields = $json->fields ?? null;
+        if (is_array($fields)) {
+            $this->walkFieldsWpmlTextLeaf($fields, '/fields', $out);
+        }
+        return $out;
+    }
+
+    /**
+     * @param array<int|string, mixed> $fields
+     * @param array<string, string>    $out
+     */
+    private function walkFieldsWpmlTextLeaf(array $fields, string $base, array &$out): void {
+        foreach ($fields as $i => $field) {
+            if (!$field instanceof \stdClass) {
+                continue;
+            }
+            $ptr = $base . '/' . $i;
+            $type = $field->type ?? null;
+            $pref = $field->wpml_cf_preferences ?? null;
+
+            if (in_array($type, ['text', 'textarea', 'wysiwyg'], true) && ($pref === 3 || $pref === 0)) {
+                $out[$ptr . '/wpml_cf_preferences'] = sprintf(
+                    'notice: WPML recommends Translate (2) for %s. %d is %s. Keep it when editors write each '
+                        . 'language by hand and the source text must not carry over; otherwise use 2.',
+                    $type,
+                    $pref,
+                    $pref === 3
+                        ? 'Copy once: the source text is copied when the translation is created and never translated afterwards'
+                        : 'Ignore: the field stays out of translation',
+                );
+            }
+
+            if (isset($field->sub_fields) && is_array($field->sub_fields)) {
+                $this->walkFieldsWpmlTextLeaf($field->sub_fields, $ptr . '/sub_fields', $out);
+            }
+            $layouts = $field->layouts ?? null;
+            if ($layouts instanceof \stdClass) {
+                $layouts = (array) $layouts;
+            }
+            if (is_array($layouts)) {
+                foreach ($layouts as $lk => $layout) {
+                    if ($layout instanceof \stdClass && isset($layout->sub_fields) && is_array($layout->sub_fields)) {
+                        $this->walkFieldsWpmlTextLeaf($layout->sub_fields, $ptr . '/layouts/' . $lk . '/sub_fields', $out);
                     }
                 }
             }

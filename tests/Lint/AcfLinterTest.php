@@ -1113,6 +1113,121 @@ final class AcfLinterTest extends TestCase {
         self::assertStringContainsString('notice:', $r->notices['/acfml_field_group_mode']);
     }
 
+    /**
+     * @param array<string, mixed> $extra
+     * @return array<string, mixed>
+     */
+    private static function leaf(string $type, int $pref, array $extra = []): array {
+        return array_merge(
+            ['key' => 'field_' . $type, 'label' => 'F', 'name' => $type, 'type' => $type, 'allow_in_bindings' => 0, 'wpml_cf_preferences' => $pref],
+            $extra,
+        );
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: int}>
+     */
+    public static function textLeavesOffRecommendation(): iterable {
+        foreach (['text', 'textarea', 'wysiwyg'] as $type) {
+            yield "$type at 3" => [$type, 3];
+            yield "$type at 0" => [$type, 0];
+        }
+    }
+
+    /**
+     * Positive control: the check can fail. A text leaf on Copy once or Ignore
+     * in an Expert group is a NOTICE — valid file, no error.
+     */
+    #[DataProvider('textLeavesOffRecommendation')]
+    public function test_wpml_text_leaf_off_translate_in_an_advanced_group_emits_a_notice(string $type, int $pref): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [self::leaf($type, $pref)]), true);
+
+        self::assertTrue($r->valid, (string) json_encode($r->errors));
+        self::assertSame([], $r->errors);
+        self::assertSame(['/fields/0/wpml_cf_preferences'], array_keys($r->notices));
+        self::assertStringContainsString('notice:', $r->notices['/fields/0/wpml_cf_preferences']);
+        self::assertStringContainsString('Translate (2)', $r->notices['/fields/0/wpml_cf_preferences']);
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: int}>
+     */
+    public static function leavesWithoutALeafNotice(): iterable {
+        yield 'text at 2' => ['text', 2];
+        yield 'text at 1' => ['text', 1];
+        yield 'textarea at 2' => ['textarea', 2];
+        yield 'wysiwyg at 1' => ['wysiwyg', 1];
+        yield 'select at 3' => ['select', 3];
+        yield 'link at 3' => ['link', 3];
+        yield 'url at 3' => ['url', 3];
+    }
+
+    #[DataProvider('leavesWithoutALeafNotice')]
+    public function test_wpml_leaf_notice_stays_silent_for_other_values_and_types(string $type, int $pref): void {
+        $extra = $type === 'select' ? ['choices' => ['a' => 'A']] : ($type === 'link' ? ['return_format' => 'array'] : []);
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [self::leaf($type, $pref, $extra)]), true);
+
+        self::assertSame([], $r->notices, (string) json_encode($r->notices));
+    }
+
+    /**
+     * The leaf notice is scoped to `advanced` groups. A missing or invalid mode
+     * already gets its own finding, so a leaf notice would only mislead.
+     */
+    public function test_wpml_leaf_notice_stays_silent_when_the_group_mode_is_missing_or_invalid(): void {
+        foreach ([[], ['acfml_field_group_mode' => 'bogus']] as $extra) {
+            $r = $this->lintAcf(self::group($extra, [self::leaf('text', 3)]), true);
+            self::assertArrayNotHasKey('/fields/0/wpml_cf_preferences', $r->notices, (string) json_encode($r->notices));
+        }
+    }
+
+    public function test_wpml_leaf_notice_stays_silent_for_image_and_repeater_at_3(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced', 'location' => [[['param' => 'block', 'operator' => '==', 'value' => 'acf/x']]]], [
+            self::leaf('image', 3, ['return_format' => 'array']),
+            self::leaf('repeater', 3, ['sub_fields' => [self::leaf('image', 3, ['return_format' => 'array'])]]),
+        ]), true);
+
+        self::assertSame([], $r->notices, (string) json_encode($r->notices));
+    }
+
+    /**
+     * Translation and localization groups hand the preference to ACFML, which
+     * sets text to 2 in both. The mode-default error already reports a
+     * different value, so the notice must not repeat it.
+     */
+    public function test_wpml_leaf_notice_leaves_managed_modes_to_the_mode_default_error(): void {
+        foreach (['translation', 'localization'] as $mode) {
+            $r = $this->lintAcf(self::group(['acfml_field_group_mode' => $mode], [self::leaf('text', 3)]), true);
+
+            self::assertFalse($r->valid, $mode);
+            self::assertSame(['/fields/0/wpml_cf_preferences'], array_keys($r->errors), $mode);
+            self::assertSame([], $r->notices, $mode);
+        }
+    }
+
+    public function test_wpml_leaf_notice_reaches_nested_and_layout_fields(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
+            self::leaf('repeater', 3, ['sub_fields' => [self::leaf('text', 3)]]),
+            self::leaf('flexible_content', 3, [
+                'layouts' => [
+                    'layout_a' => [
+                        'key' => 'layout_a', 'name' => 'a', 'label' => 'A', 'display' => 'block',
+                        'sub_fields' => [self::leaf('wysiwyg', 3)],
+                    ],
+                ],
+            ]),
+        ]), true);
+
+        self::assertArrayHasKey('/fields/0/sub_fields/0/wpml_cf_preferences', $r->notices);
+        self::assertArrayHasKey('/fields/1/layouts/layout_a/sub_fields/0/wpml_cf_preferences', $r->notices);
+    }
+
+    public function test_wpml_leaf_notice_is_off_without_the_wpml_flag(): void {
+        $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [self::leaf('text', 3)]), false);
+
+        self::assertSame([], $r->notices);
+    }
+
     public function test_wpml_advanced_post_group_without_a_repeater_is_silent(): void {
         $r = $this->lintAcf(self::group(['acfml_field_group_mode' => 'advanced'], [
             ['key' => 'field_a', 'label' => 'A', 'name' => 'a', 'type' => 'text', 'allow_in_bindings' => 0, 'wpml_cf_preferences' => 2],
