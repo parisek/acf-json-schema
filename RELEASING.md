@@ -10,10 +10,28 @@
 
 ### 1. Verify schemas against a live WP install
 
+Run the generator from a checkout of the release branch (with `composer install` done). The checkout must be visible inside the DDEV container. Run the commands below in a shell inside the container (`ddev ssh`), from the checkout.
+
+`acf-schema-gen` boots WordPress. If the site's theme requires this package, the theme's Composer autoloader registers first and loads the **installed** copy of the classes. The generator then copies the installed refs, not the refs under release. A preload file loads the checkout's classes before WordPress boots, so they win:
+
 ```bash
-ddev exec "php vendor/bin/acf-schema-gen --wp-root /var/www/html --output /tmp/acf-schemas-out/"
-diff -r /tmp/acf-schemas-out/ vendor/parisek/acf-json-schema/schemas/
+cat > /tmp/acf-preload.php <<'PHP'
+<?php
+require getcwd() . '/vendor/autoload.php';
+foreach (['Generator', 'Json', 'Emit\SchemaEmitter', 'Extract\BlockExtractor', 'Extract\CptExtractor', 'Extract\TaxonomyExtractor'] as $class) {
+    class_exists("Parisek\\AcfJsonSchema\\$class");
+}
+PHP
+
+php -d auto_prepend_file=/tmp/acf-preload.php bin/acf-schema-gen --wp-root /var/www/html --output /tmp/acf-schemas-out/
+diff -r -x _meta.json -x .gitkeep /tmp/acf-schemas-out/ schemas/
+diff -r /tmp/acf-schemas-out/refs/ src/templates/refs/
 ```
+
+- The first `diff` compares the output with the `schemas/` of the checkout, **not** with `vendor/parisek/acf-json-schema/schemas/`. A package checkout has no such path. In a theme, that path is the installed copy.
+- The second `diff` must print nothing. `copyStaticRefs()` copies the package's own templates verbatim, so the refs are the same on both sides by design. A difference here means the installed copy ran, not the checkout. Stop and fix the setup.
+- This step can catch ACF drift only in the generated files: the extractor-backed roots (`block`, `cpt`, `taxonomy`), the `acf.schema.json` and `field-item.schema.json` composition, and the `verifyAcfPro()` check. It does not check hand-curated refs against ACF. `SchemaConsistencyTest` only keeps `schemas/refs/` identical to the templates.
+- `_meta.json` is not tracked, so `-x _meta.json` hides the expected extra file.
 
 If `diff` shows changes, review them. If they represent intentional ACF version drift, update the hand-curated refs and commit before tagging.
 
