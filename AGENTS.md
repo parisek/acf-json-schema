@@ -33,7 +33,7 @@ composer normalize   # tidy composer.json
 composer audit --abandoned=report   # advisory scan (abandoned reported, not failed)
 ```
 
-DDEV is the local-dev expectation for the live-WP paths (`ddev exec "php vendor/bin/acf-schema-gen --wp-root /var/www/html --output /tmp/out/"`). CI (`.github/workflows/tests.yml`) runs `composer check` on PHP 8.3 + 8.4 plus a `composer` hygiene job (validate + audit + normalize).
+DDEV is the local-dev expectation for the live-WP paths (`ddev exec "php vendor/bin/acf-schema-gen --wp-root /var/www/html --output /tmp/out/"`). CI (`.github/workflows/tests.yml`) runs `composer check` on PHP 8.3 + 8.4 + 8.5 plus a `composer` hygiene job (validate + audit + normalize).
 
 ## Schema source-of-truth rules — DON'T let these drift
 
