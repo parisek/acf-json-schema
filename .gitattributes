@@ -12,3 +12,5 @@
 /composer.lock   export-ignore
 CHANGELOG.md     export-ignore
 /.editorconfig export-ignore
+/SECURITY.md     export-ignore
+/CONTRIBUTING.md export-ignore

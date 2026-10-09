@@ -17,6 +17,11 @@
         }
     ],
     "homepage": "https://github.com/parisek/acf-json-schema",
+    "support": {
+        "issues": "https://github.com/parisek/acf-json-schema/issues",
+        "source": "https://github.com/parisek/acf-json-schema",
+        "security": "https://github.com/parisek/acf-json-schema/blob/main/SECURITY.md"
+    },
     "require": {
         "php": "^8.3",
         "composer-runtime-api": "^2.0",

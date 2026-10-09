@@ -1,0 +1,35 @@
+name: Bug report
+description: A schema rejects a valid ACF JSON file, accepts an invalid one, or a tool fails.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Say what you expected and what you got.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Add the smallest ACF JSON file or command that shows the problem.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: "0.9.0"
+    validations:
+      required: true
+  - type: input
+    id: acf
+    attributes:
+      label: ACF Pro version
+      placeholder: "6.8.2"
+  - type: input
+    id: php
+    attributes:
+      label: PHP version
+      placeholder: "8.3"
